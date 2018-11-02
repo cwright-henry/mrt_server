@@ -1,7 +1,7 @@
 const Bluecrowe = require('../services/bluecrowe');
 const Alphavantage = require('../services/alphavantage');
 const Timeseries = require('../models/timeseries');
-const moment = require('moment');
+const UserHistory = require('../models/userhistory');
 
 module.exports = { 
 
@@ -115,15 +115,21 @@ module.exports = {
 	async upload(req, res) {
 		try {
 			const {user} = req;
-			const {name, ts, fit} = req.body;
+			const {name, ts, fit, source} = req.body;
 			const timeSeries = new Timeseries({
 				name,
+				source,
 				fit: Object.assign(fit, {start_date: ts[0][0], end_date: ts[ts.length - 1][0]}),
 				ts,
 				user
 			})
-
-			res.send(Timeseries.create(timeSeries));
+			const userHistory = new UserHistory({
+				action: 'ADD_LIBRARY',
+				meta: source,
+				user
+			});
+			await userHistory.save();
+			res.send(await Timeseries.create(timeSeries));
 		}
 		catch(e) {
 			console.log(e)
@@ -136,7 +142,7 @@ module.exports = {
 	/**
 	 * Limit size of 0 returns only meta data, lazy load the time series
 	 */
-  async list (req, res) {
+  async library (req, res) {
 		const {user} = req;
 		const {page, nameFilter, pageSize} = req.query
     const query = {
@@ -158,7 +164,34 @@ module.exports = {
 		catch(e) {
 			console.log(e)
 			res.status(500).send({
-        error: 'An error has occured trying to paginate ' + e
+        error: 'An error has occured trying to paginate library ' + e
+      })
+		}
+	},
+
+	async userHistory (req, res) {
+		const {user} = req;
+		const {page, pageSize} = req.query
+
+		const query = {
+			user: user._id
+    }
+
+    const options = {
+			page: page,
+			limit: parseInt(pageSize),
+			sort: { 
+				created: -1 
+			}
+    }
+		try {
+			const results = await UserHistory.page(query, options)
+			res.send(results);
+		}
+		catch(e) {
+			console.log(e)
+			res.status(500).send({
+        error: 'An error has occured trying to paginate user history' + e
       })
 		}
 	},
@@ -171,7 +204,13 @@ module.exports = {
 				_id: id, 
 				user: user
 			};
-    	const results =  await Timeseries.findOneAndRemove(query).exec();
+			
+			const results =  await Timeseries.findOneAndRemove(query).exec();
+			const userHistory = new UserHistory({
+				action: 'REMOVE_LIBRARY',
+				user
+			});
+			await userHistory.save();
 			res.send(results);
 		}
 		catch(e) {

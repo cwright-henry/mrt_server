@@ -8,6 +8,11 @@ const TimeSeriesSchema = new mongoose.Schema({
 		required: true,
 		trim: true
 	},
+	source: {
+		type: String,
+		required: true,
+		trim: true
+	},
 	fit: {
 		type: {
 			kappa: {

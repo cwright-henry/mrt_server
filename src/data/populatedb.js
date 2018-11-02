@@ -1,18 +1,19 @@
 #! /usr/bin/env node
 
-console.log('Populating default user and timeseries...')
+console.log('Populating collections...')
 
 const fs = require('fs');
 const moment = require('moment');
 const Timeseries = require('../models/timeseries');
 const Users = require('../models/users');
+const UserHistory = require('../models/userhistory');
 const Bluecrowe = require('../services/bluecrowe');
 const config = require('../config/config');
 
 // Setup DB connection
 const mongoose = require('mongoose');
 const mongoDB = config.db.baseURL;
-mongoose.connect(mongoDB);
+mongoose.connect(mongoDB, {useNewUrlParser: true, useCreateIndex: true});
 mongoose.Promise = global.Promise;
 const db = mongoose.connection;
 mongoose.connection.on('error', console.error.bind(console, 'MongoDB connection error:'));
@@ -73,9 +74,19 @@ function createUser(firstName, lastName, email, password) {
 	return Users.create(newUser);
 }
 
+function createUserHistory(action, meta, user) {
+	const userHistory = new UserHistory({
+		action,
+		meta,
+		user
+	})
+	return userHistory.save();
+}
+
 function createTimeseries(name, fit, series, user) {
 	const ts = new Timeseries({
 		name,
+		source: 'AUTO_POPULATE',
 		fit: Object.assign(fit, {start_date: series[0][0], end_date: series[series.length - 1][0]}),
 		ts:series,
 		user
@@ -86,10 +97,12 @@ function createTimeseries(name, fit, series, user) {
 function dropCollection() {
 	return new Promise( (resolve, reject) => {
 		db.dropCollection('timeseries', (err, result) => {
-			db.dropCollection('users', (err, result) => {
-				if(err) return reject(err);
-				console.log(`Dropped timeseries and user collections ...`);
-				return resolve(result);
+			db.dropCollection('user_histories', (err, result) => {
+				db.dropCollection('users', (err, result) => {
+					if(err) return reject(err);
+					console.log(`Dropped timeseries, user_history and user collections ...`);
+					return resolve(result);
+				});
 			});
 		});
 	});
@@ -128,6 +141,7 @@ function saveTimeseries(series, user) {
 		const p = [];
 		series.forEach(item => {
 			p.push(createTimeseries(item.name, item.fit, item.data, user));
+			p.push(createUserHistory('ADD_LIBRARY', 'AUTO_POOPULATE', user));
 		});
 		Promise.all(p)
 		.then(() => resolve())
