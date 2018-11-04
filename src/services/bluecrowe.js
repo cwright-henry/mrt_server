@@ -39,8 +39,8 @@ class Bluecrowe {
 		});
 	}
 
-	static async getAll({kappa = 1.1, sigma = 2.1, theta = 0.1, carry = 0.1, x_T = 1.1, trans_oneway_stdev = 0.05} = {}) {
-		return await Bluecrowe._request({path: 'data/all2', data: JSON.stringify({kappa, sigma, theta, carry, x_T, trans_oneway_stdev})}).then((response) => JSON.parse(response));
+	static async getAll({proctype = 'OU', kappa = 1.1, sigma = 2.1, theta = 0.1, carry = 0.1, x_T = 1.1, trans_oneway_stdev = 0.05} = {}) {
+		return await Bluecrowe._request({path: 'data/all2', data: JSON.stringify({proctype, kappa, sigma, theta, carry, x_T, trans_oneway_stdev})}).then((response) => JSON.parse(response));
 	}
 
 	static async getProb({kappa = 1.0, sigma = 2.0, theta = 0.0, carry = 0.0, x_T = 1.0} = {}) {
