@@ -2,13 +2,12 @@ const express = require('express');
 const path = require('path')
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
-const passport = require('passport');
 const config = require('./config/config')
 const cors = require('cors')
-const morgan = require('morgan')
+const morgan = require('./config/morgan')
 
 const app = express()
-app.use(morgan('combined'))
+app.use(morgan())
 app.use(bodyParser.json({limit: '50mb'}))
 app.use(cors())
 

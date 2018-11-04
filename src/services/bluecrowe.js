@@ -1,6 +1,8 @@
 const http = require('http');
 const moment = require('moment')
 
+const DATE_FORMAT = "YYYY-MM-DD"
+
 class Bluecrowe {
 	static _request({path, data}) {
 		const opts = {
@@ -10,7 +12,8 @@ class Bluecrowe {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
-				'Content-Length': data.length
+				'Content-Length': data.length,
+				'api-key': 'CWH667'
 			}
 		};
 
@@ -55,11 +58,14 @@ class Bluecrowe {
 	static async getFit(ts = []) {
 		const data = {};
 		for(let i = 0; i < ts.length; i++) {
-			const date = moment.utc(ts[i][0]).format()
+			const date = ts[i][0]
 			const value = ts[i][1]
 			data[date] = value;
 		}
-		return await Bluecrowe._request({path: 'data/fit_mle', data: JSON.stringify({ts:data})}).then((response) => JSON.parse(response));
+		const start_date = moment(ts[0][0]).format(DATE_FORMAT)
+		const end_date = moment(ts[ts.length - 1][0]).format(DATE_FORMAT)
+
+		return await Bluecrowe._request({path: 'data/fit_all', data: JSON.stringify({proctype: 'OU', ts:data, start_date: start_date, end_date: end_date})}).then((response) => JSON.parse(response));
 	}
 
 	static async getScenarios({kappa = 1.0, sigma = 2.0, theta = 0.0, carry = 0.0, x_T = 1.0} = {}) {

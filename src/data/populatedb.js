@@ -117,6 +117,7 @@ function fit(series) {
 		Promise.all(p)
 		.then(results => {
 			results.forEach((elm, index) => {
+				console.log(results[index].resid)
 				series[index].fit = results[index];
 			});
 			console.log(`Fitted series ...`);
