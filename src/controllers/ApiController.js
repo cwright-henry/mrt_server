@@ -101,7 +101,7 @@ module.exports = {
 				_id: timeseriesId, 
 				user: user
 			};
-			const results =  await Timeseries.findOne(query).select('ts').exec();
+			const results =  await Timeseries.findOne(query).exec();
 			res.send(results);
 		}
 		catch(e) {
@@ -155,7 +155,7 @@ module.exports = {
 			sort: { 
 				lastUpdate: -1 
 			},
-			select: '-ts'
+			select: '-ts -fit'
     }
 		try {
 			const results = await Timeseries.page(query, options)

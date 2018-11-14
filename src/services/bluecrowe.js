@@ -65,7 +65,20 @@ class Bluecrowe {
 		const start_date = moment(ts[0][0]).format(DATE_FORMAT)
 		const end_date = moment(ts[ts.length - 1][0]).format(DATE_FORMAT)
 
-		return await Bluecrowe._request({path: 'data/fit_all', data: JSON.stringify({proctype: 'OU', ts:data, start_date: start_date, end_date: end_date})}).then((response) => JSON.parse(response));
+		return await Bluecrowe._request({path: 'data/fit_all', data: JSON.stringify({proctype: 'OU', ts: data, start_date: start_date, end_date: end_date})})
+			.then((response) => {
+				const res = JSON.parse(response);
+				if(res.resid) {
+					const arr = []
+					for(let t in res.resid) {
+						if(res.resid.hasOwnProperty(t)) {
+							arr.push([parseInt(t), res.resid[t]])
+						}
+					}
+					res.resid = arr;
+				}
+				return res;
+			});
 	}
 
 	static async getScenarios({kappa = 1.0, sigma = 2.0, theta = 0.0, carry = 0.0, x_T = 1.0} = {}) {
