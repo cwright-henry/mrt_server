@@ -115,13 +115,18 @@ module.exports = {
 	async upload(req, res) {
 		try {
 			const {user} = req;
-			const {name, ts, fit, source} = req.body;
+			const {name, ts, source} = req.body;
+
+			const fit = await Bluecrowe.getFit(ts);
+
 			const timeSeries = new Timeseries({
 				name,
 				source,
 				fit: Object.assign(fit, {start_date: ts[0][0], end_date: ts[ts.length - 1][0]}),
 				ts,
-				user
+				user,
+				created: new Date().getTime(),
+				lastUpdate: new Date().getTime()
 			})
 			const userHistory = new UserHistory({
 				action: 'ADD_LIBRARY',
