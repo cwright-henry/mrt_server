@@ -88,11 +88,11 @@ const TimeSeriesSchema = new mongoose.Schema({
 	ts: [],
 	created: {
 		type: Number,
-		default: new Date().getTime()
+		default: Date.now
 	},
 	lastUpdate: {
 		type: Number,
-		default: new Date().getTime()
+		default: Date.now
 	},
 	user: {
 		type: Schema.Types.ObjectId,

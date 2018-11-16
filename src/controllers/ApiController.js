@@ -124,9 +124,7 @@ module.exports = {
 				source,
 				fit: Object.assign(fit, {start_date: ts[0][0], end_date: ts[ts.length - 1][0]}),
 				ts,
-				user,
-				created: new Date().getTime(),
-				lastUpdate: new Date().getTime()
+				user
 			})
 			const userHistory = new UserHistory({
 				action: 'ADD_LIBRARY',
