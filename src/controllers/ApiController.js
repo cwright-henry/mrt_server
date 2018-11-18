@@ -1,5 +1,6 @@
 const Bluecrowe = require('../services/bluecrowe');
 const Alphavantage = require('../services/alphavantage');
+const Investing = require('../services/investing');
 const Timeseries = require('../models/timeseries');
 const UserHistory = require('../models/userhistory');
 
@@ -253,6 +254,20 @@ module.exports = {
 			console.log(e)
 			res.status(500).send({
         error: 'An error retrieving data from Alphavantage ' + e
+      })
+		}
+	},
+	
+	async findInvesting (req, res) {
+		const {curr_id, startDate, endDate} = req.query;
+		try {
+			const results =  await Investing.get(curr_id, startDate, endDate);
+			res.send(results);
+		}
+		catch(e) {
+			console.log(e)
+			res.status(500).send({
+        error: 'An error retrieving data from Investing ' + e
       })
 		}
   }
