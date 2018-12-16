@@ -19,7 +19,7 @@ morgan.token('pid', function getPid() {
 });
 
 module.exports = function loggingMiddleware() {
-	return morgan(jsonFormat /*, {stream: winston.stream} */);
+	return morgan(jsonFormat ,{stream: winston.stream});
 };
 
 function jsonFormat(tokens, req, res) {

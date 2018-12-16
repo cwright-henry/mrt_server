@@ -1,62 +1,10 @@
 const mongoose = require('mongoose');
 const mongoosePaginate = require('mongoose-paginate-v2');
-const Schema = mongoose.Schema;
+const fittingSchema = require('./FittingSchema')
+const NoFittingSchema = require('./NoFittingSchema')
+const OUFittingSchema = require('./OUFittingSchema')
 
-const FitSchema = new mongoose.Schema({
-	kappa: {
-		type: Number,
-		default: 0.0
-	},
-	sigma: {
-		type: Number,
-		default: 0.0
-	},
-	theta: {
-		type: Number,
-		default: 0.0
-	},
-	adf_stat: {
-		type: Number,
-		default: 0.0 
-	},
-	p_val: {
-		type: Number,
-		default: 0.0 
-	},
-	sig_lev: {
-		type: String,
-		default: '' 
-	},
-	resid: [],
-	R2: {
-		type: Number,
-		default: 0.0 
-	}, 
-	resid_mean: {
-		type: Number,
-		default: 0.0 
-	},
-	resid_std: {
-		type: Number,
-		default: 0.0 
-	},
-	resid_skew: {
-		type: Number,
-		default: 0.0 
-	},
-	resid_kurt: {
-		type: Number,
-		default: 0.0 
-	},
-	start_date: {
-		type: Number,
-		default: new Date().getTime()
-	},
-	end_date: {
-		type: Number,
-		default: new Date().getTime()
-	}
-});
+const Schema = mongoose.Schema;
 
 const TimeSeriesSchema = new mongoose.Schema({
 	name: {
@@ -67,20 +15,13 @@ const TimeSeriesSchema = new mongoose.Schema({
 	source: {
 		type: String,
 		required: true,
-		trim: true
-	},
-	proctype: {
-		type: String,
-		enum: ['OU'],
-		default: 'OU'
+		trim: true,
+		enum: ['SYSTEM', 'CSV'],
+		default: 'SYSTEM'
 	},
 	fit: {
 		required: true,
-		type: FitSchema	
-	},
-	current_fit: {
-		required: false,
-		type: FitSchema	
+		type: fittingSchema
 	},
 	sltp: {
 		required: false
@@ -105,6 +46,9 @@ TimeSeriesSchema.plugin(mongoosePaginate)
 TimeSeriesSchema.virtual('url').get(function () {
     return '/mrt/timeseries/' + this._id;
 });
+
+TimeSeriesSchema.path('fit').discriminator('NONE', NoFittingSchema)
+TimeSeriesSchema.path('fit').discriminator('OU', OUFittingSchema)
 
 /**
  * Export the model to create the schema

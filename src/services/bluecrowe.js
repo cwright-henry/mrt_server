@@ -55,34 +55,58 @@ class Bluecrowe {
 		return await Bluecrowe._request({path: 'data/et2', data: JSON.stringify({kappa, sigma, theta, carry, x_T})}).then((response) => JSON.parse(response));
 	}
 
-	static async getFit(ts = []) {
+	static async getFit({proctype = 'OU', start_date = new Date().getTime(), end_date = new Date().getTime(), ts = []} = {}) {
 		const data = {};
 		for(let i = 0; i < ts.length; i++) {
 			const date = ts[i][0]
 			const value = ts[i][1]
 			data[date] = value;
 		}
-		const start_date = moment(ts[0][0]).format(DATE_FORMAT)
-		const end_date = moment(ts[ts.length - 1][0]).format(DATE_FORMAT)
+		start_date = moment(start_date).format(DATE_FORMAT)
+		end_date = moment(end_date).format(DATE_FORMAT)
 
-		return await Bluecrowe._request({path: 'data/fit_all', data: JSON.stringify({proctype: 'OU', ts: data, start_date: start_date, end_date: end_date})})
+		return await Bluecrowe._request({path: 'data/fit_all', data: JSON.stringify({proctype, ts: data, start_date, end_date})})
+			.then((response) => JSON.parse(response))
 			.then((response) => {
-				const res = JSON.parse(response);
-				if(res.resid) {
+				if(response.start_date) {
+					response.start_date = moment(response.start_date, DATE_FORMAT).valueOf();
+				}
+				if(response.end_date) {
+					response.end_date = moment(response.end_date, DATE_FORMAT).valueOf();
+				}
+				if(response.x_0_date) {
+					response.x_0_date = moment(response.x_0_date, DATE_FORMAT).valueOf();
+				}
+				if(response.resid) {
 					const arr = []
-					for(let t in res.resid) {
-						if(res.resid.hasOwnProperty(t)) {
-							arr.push([parseInt(t), res.resid[t]])
+					for(let t in response.resid) {
+						if(response.resid.hasOwnProperty(t)) {
+							arr.push([parseInt(t), response.resid[t]])
 						}
 					}
-					res.resid = arr;
+					response.resid = arr;
 				}
-				return res;
+				return response;
 			});
 	}
 
-	static async getScenarios({kappa = 1.0, sigma = 2.0, theta = 0.0, carry = 0.0, x_T = 1.0} = {}) {
-		return await Bluecrowe._request({path: 'data/get_scenarios', data: JSON.stringify({kappa, sigma, theta, carry, x_T})}).then((response) => JSON.parse(response));
+	static async getScenarios({proctype = 'OU', kappa = 1.0, sigma = 2.0, theta = 0.0, x_0 = 1.0, x_0_date = new Date().getTime(), nsteps = 1560} = {}) {
+		const date = moment(x_0_date).format(DATE_FORMAT)
+		return await Bluecrowe._request({path: 'data/get_scenarios', data: JSON.stringify({proctype, kappa, sigma, theta, x_0, x_0_date: date, nsteps})})
+			.then((response) => JSON.parse(response))
+			.then((response) => {
+				const data = {};
+				for(let elm in response) {
+					let arr = []
+					for(let t in response[elm]) {
+						if(response[elm].hasOwnProperty(t)) {
+							arr.push([parseInt(t), response[elm][t]])
+						}
+					}
+					data[elm] = arr;
+				}
+				return data
+			})
 	}
 
 	static async getBarrierScenarios({kappa = 1.0, sigma = 2.0, theta = 0.0, x_T = 1.0, a_lvl = 0.5, b_lvl = 1.5} = {}) {

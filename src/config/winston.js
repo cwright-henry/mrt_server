@@ -5,18 +5,17 @@ const esTransportOpts = {
   level: 'info'
 };
 
-// const Logger = winston.createLogger({
-// 	format: winston.format.json(),
-//   transports: [
-//     new Elasticsearch(esTransportOpts)
-//   ]
-// })
+const Logger = winston.createLogger({
+	format: winston.format.json(),
+  transports: [
+    new Elasticsearch(esTransportOpts)
+  ]
+})
 
-// Logger.stream = {
-//   write: function(message, encoding) {
-//     //Logger.info('message', JSON.parse(message));
-//     console.log(message)
-//   }
-// }
+Logger.stream = {
+  write: function(message, encoding) {
+    Logger.info('message', JSON.parse(message));
+  }
+}
 
-module.exports = null;
+module.exports = Logger;

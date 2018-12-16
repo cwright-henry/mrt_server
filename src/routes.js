@@ -23,6 +23,7 @@ module.exports = (app) => {
 	app.get('/api/data-get-barrier-scenarios', isAuthenticated, ApiController.getBarrierScenarios)
 
 	// User API
+	app.post('/api/save-ou-Fit', isAuthenticated, ApiController.saveOUFit)
 	app.get('/api/findTs', isAuthenticated, ApiController.findTs)
 	app.get('/api/find', isAuthenticated, ApiController.find)
 	app.get('/api/list', isAuthenticated, ApiController.library)

@@ -1573,9 +1573,9 @@ mongodb-core@3.0.5:
     bson "~1.0.4"
     require_optional "^1.0.1"
 
-mongodb-core@3.1.7:
-  version "3.1.7"
-  resolved "https://registry.yarnpkg.com/mongodb-core/-/mongodb-core-3.1.7.tgz#fe61853a6a6acbd2046c91794e5325ecad85428a"
+mongodb-core@3.1.9:
+  version "3.1.9"
+  resolved "https://registry.yarnpkg.com/mongodb-core/-/mongodb-core-3.1.9.tgz#c31ee407bf932b0149eaed775c17ee09974e4ca3"
   dependencies:
     bson "^1.1.0"
     require_optional "^1.0.1"
@@ -1583,11 +1583,11 @@ mongodb-core@3.1.7:
   optionalDependencies:
     saslprep "^1.0.0"
 
-mongodb@3.1.8:
-  version "3.1.8"
-  resolved "https://registry.yarnpkg.com/mongodb/-/mongodb-3.1.8.tgz#df8084fda2efdbaddd05dfd6a269891fc4cc72df"
+mongodb@3.1.10:
+  version "3.1.10"
+  resolved "https://registry.yarnpkg.com/mongodb/-/mongodb-3.1.10.tgz#45ad9b74ea376f4122d0881b75e5489b9e504ed7"
   dependencies:
-    mongodb-core "3.1.7"
+    mongodb-core "3.1.9"
     safe-buffer "^5.1.2"
 
 mongodb@^3.0.5:
@@ -1606,16 +1606,16 @@ mongoose-paginate-v2@^1.0.12:
   dependencies:
     bluebird "3.5.1"
 
-mongoose@^5.3.3:
-  version "5.3.9"
-  resolved "https://registry.yarnpkg.com/mongoose/-/mongoose-5.3.9.tgz#3ef2cde3e9201555de9d06f317a6f76605638e25"
+mongoose@^5.3.16:
+  version "5.3.16"
+  resolved "https://registry.yarnpkg.com/mongoose/-/mongoose-5.3.16.tgz#04af18eaf39f7a91e31285cfb180478874877611"
   dependencies:
     async "2.6.1"
     bson "~1.1.0"
     kareem "2.3.0"
     lodash.get "4.4.2"
-    mongodb "3.1.8"
-    mongodb-core "3.1.7"
+    mongodb "3.1.10"
+    mongodb-core "3.1.9"
     mongoose-legacy-pluralize "1.0.2"
     mpath "0.5.1"
     mquery "3.2.0"

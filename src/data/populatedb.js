@@ -83,11 +83,12 @@ function createUserHistory(action, meta, user) {
 	return userHistory.save();
 }
 
-function createTimeseries(name, fit, series, user) {
+function createTimeseries(name, series, user) {
 	const ts = new Timeseries({
 		name,
-		source: 'AUTO_POPULATE',
-		fit: Object.assign(fit, {start_date: series[0][0], end_date: series[series.length - 1][0]}),
+		fit: {
+			proctype: 'NONE'
+		},
 		ts:series,
 		user
 	});
@@ -112,7 +113,7 @@ function fit(series) {
 	return new Promise((resolve, reject) => {
 		const p = [];
 		series.forEach(item => {
-			p.push(Bluecrowe.getFit(item.data));
+			p.push(Bluecrowe.getFit({ts:item.data}));
 		});
 		Promise.all(p)
 		.then(results => {
@@ -140,7 +141,7 @@ function saveTimeseries(series, user) {
 	return new Promise((resolve, reject) => {
 		const p = [];
 		series.forEach(item => {
-			p.push(createTimeseries(item.name, item.fit, item.data, user));
+			p.push(createTimeseries(item.name, item.data, user));
 			p.push(createUserHistory('ADD_LIBRARY', 'AUTO_POOPULATE', user));
 		});
 		Promise.all(p)
@@ -157,14 +158,14 @@ async function init() {
 	try {
 		await dropCollection();
 		const user = await createUser('admin', 'admin', 'admin@mrt.io', '12345678');
-		const data = await parseFiles();
-		const series = await fit(data);
+		const series = await parseFiles();
+		//const series = await fit(data);
 		await saveTimeseries(series, user);
 		const diff = process.hrtime(time);
 		const nanoseconds = (diff[0] * 1e9) + diff[1];
 		const seconds = nanoseconds / 1e9;
 
-			console.log(`Import success in ${seconds} seconds`);
+		console.log(`Import success in ${seconds} seconds`);
 	}
 	catch(error) {
 		console.log(error)

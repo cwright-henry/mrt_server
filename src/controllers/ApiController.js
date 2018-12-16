@@ -61,8 +61,17 @@ module.exports = {
 		
 	async getFit(req, res) {
 		try {
-			const {ts} = req.body;
-			const fit = await Bluecrowe.getFit(ts);
+			let {ts, start_date, end_date} = req.body;
+
+			if(!start_date) {
+				start_date = ts[0][0]
+			}
+
+			if(!end_date) {
+				end_date = ts[ts.length - 1][0]
+			}
+
+			const fit = await Bluecrowe.getFit({ts, start_date, end_date});
 			res.send(fit);
 		}
 		catch(error) {
@@ -73,7 +82,16 @@ module.exports = {
 		
 	async getScenarios(req, res) {
 		try {
-			const result = await Bluecrowe.getScenarios();
+			const {kappa, sigma, theta, x_0, x_0_date} = req.query;
+			const query = {
+				kappa: parseFloat(kappa),
+				sigma: parseFloat(sigma),
+				theta: parseFloat(theta),
+				x_0:  parseFloat(x_0),
+				x_0_date: parseInt(x_0_date)
+			}
+
+			const result = await Bluecrowe.getScenarios(query);
 			res.send(result);
 		}
 		catch(error) {
@@ -118,12 +136,12 @@ module.exports = {
 			const {user} = req;
 			const {name, ts, source} = req.body;
 
-			const fit = await Bluecrowe.getFit(ts);
-
 			const timeSeries = new Timeseries({
 				name,
 				source,
-				fit: Object.assign(fit, {start_date: ts[0][0], end_date: ts[ts.length - 1][0]}),
+				fit: {
+					proctype: 'NONE'
+				},
 				ts,
 				user
 			})
@@ -270,5 +288,31 @@ module.exports = {
         error: 'An error retrieving data from Investing ' + e
       })
 		}
-  }
+	},
+	
+	async saveOUFit (req, res) {
+		const {user} = req;
+		const {id, fit} = req.body;
+
+		const query = {
+			_id: id, 
+			user: user._id
+		}
+
+		const update = {
+			lastUpdate: Date.now(),
+			fit: fit
+		}
+		
+		try {
+			const results =  await Timeseries.findOneAndUpdate(query, update, {new: true}).exec();
+			res.send(results);
+		}
+		catch(e) {
+			console.log(e)
+			res.status(500).send({
+        error: 'An error updating fit ' + e
+      })
+		}
+	}
 }
