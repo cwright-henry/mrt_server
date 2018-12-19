@@ -61,7 +61,7 @@ module.exports = {
 		
 	async getFit(req, res) {
 		try {
-			let {ts, start_date, end_date} = req.body;
+			let {ts, start_date, end_date, kappa, sigma, theta} = req.body;
 
 			if(!start_date) {
 				start_date = ts[0][0]
@@ -71,7 +71,23 @@ module.exports = {
 				end_date = ts[ts.length - 1][0]
 			}
 
-			const fit = await Bluecrowe.getFit({ts, start_date, end_date});
+			const params = {
+				ts,
+				start_date,
+				end_date
+			}
+
+			if(kappa) {
+				params.kappa = parseFloat(kappa)
+			}
+			if(sigma) {
+				params.sigma = parseFloat(sigma)
+			}
+			if(theta) {
+				params.theta = parseFloat(theta)
+			}
+
+			const fit = await Bluecrowe.getFit(params);
 			res.send(fit);
 		}
 		catch(error) {

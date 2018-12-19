@@ -16,7 +16,7 @@ const TimeSeriesSchema = new mongoose.Schema({
 		type: String,
 		required: true,
 		trim: true,
-		enum: ['SYSTEM', 'CSV'],
+		enum: ['SYSTEM', 'CSV', 'AV'],
 		default: 'SYSTEM'
 	},
 	fit: {

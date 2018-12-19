@@ -55,7 +55,7 @@ class Bluecrowe {
 		return await Bluecrowe._request({path: 'data/et2', data: JSON.stringify({kappa, sigma, theta, carry, x_T})}).then((response) => JSON.parse(response));
 	}
 
-	static async getFit({proctype = 'OU', start_date = new Date().getTime(), end_date = new Date().getTime(), ts = []} = {}) {
+	static async getFit({proctype = 'OU', kappa = 'nan', sigma = 'nan', theta = 'nan', start_date = new Date().getTime(), end_date = new Date().getTime(), ts = []} = {}) {
 		const data = {};
 		for(let i = 0; i < ts.length; i++) {
 			const date = ts[i][0]
@@ -65,7 +65,7 @@ class Bluecrowe {
 		start_date = moment.utc(start_date).format(DATE_FORMAT)
 		end_date = moment.utc(end_date).format(DATE_FORMAT)
 
-		return await Bluecrowe._request({path: 'data/fit_all', data: JSON.stringify({proctype, ts: data, start_date, end_date})})
+		return await Bluecrowe._request({path: 'data/fit_all', data: JSON.stringify({proctype, kappa, sigma, theta, ts: data, start_date, end_date})})
 			.then((response) => JSON.parse(response))
 			.then((response) => {
 				if(response.start_date) {
