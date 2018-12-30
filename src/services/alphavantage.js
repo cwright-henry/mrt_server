@@ -42,7 +42,7 @@ class Alphavantage {
 			let tsData = data["Time Series (Daily)"]
 			
 			for (let date in tsData) {
-				let timestamp = moment(date, dateFormat).valueOf()
+				let timestamp = moment.utc(date, dateFormat).valueOf()
 				let value = parseFloat(tsData[date]["5. adjusted close"]);
 				ts.push([timestamp, value])
 			}

@@ -1,142 +1,27 @@
-const Bluecrowe = require('../services/bluecrowe');
-const Alphavantage = require('../services/alphavantage');
-const Investing = require('../services/investing');
 const Timeseries = require('../models/timeseries');
+const Strategy = require('../models/strategies');
 const UserHistory = require('../models/userhistory');
+const Dictionary = require('../models/Dictionary');
+const Investing = require('../services/investing');
+const Alphavantage = require('../services/alphavantage');
 
 module.exports = { 
-
-  async getAll(req, res) {
-		try {
-			const {kappa, sigma, theta, carry, x_T, trans_oneway_stdev} = req.query;
-			const payload = {
-				kappa: parseFloat(kappa),
-				sigma: parseFloat(sigma),
-				theta: parseFloat(theta),
-				carry: parseFloat(carry),
-				x_T: parseFloat(x_T),
-				trans_oneway_stdev: parseFloat(trans_oneway_stdev)
-			}
-			const result = await Bluecrowe.getAll(payload);
-			res.send(result);
-		}
-		catch(error) {
-			console.log(error)
-			res.status(500).send('Data All Error = ' + error);
-		}
-	},
-    
-	async getProb(req, res) {
-		try {
-			const result = await Bluecrowe.getProb();
-			res.send(result);
-		}
-		catch(error) {
-			console.log(error)
-			res.status(500).send('Data Prob Error = ' + error);
-		}
-	},
-    
-	async getEpnl(req, res) {
-		try {
-			const result = await Bluecrowe.getEpnl();
-			res.send(result);
-		}
-		catch(error) {
-			console.log(error)
-			res.status(500).send('Data Enpl Error = ' + error);
-		}
-	},
-		
-	async getEt(req, res) {
-		try {
-			const result = await Bluecrowe.getEt();
-			res.send(result);
-		}
-		catch(error) {
-			console.log(error)
-			res.status(500).send('Data Et Error = ' + error);
-		}
-	},
-		
-	async getFit(req, res) {
-		try {
-			let {ts, start_date, end_date, kappa, sigma, theta} = req.body;
-
-			if(!start_date) {
-				start_date = ts[0][0]
-			}
-
-			if(!end_date) {
-				end_date = ts[ts.length - 1][0]
-			}
-
-			const params = {
-				ts,
-				start_date,
-				end_date
-			}
-
-			if(kappa) {
-				params.kappa = parseFloat(kappa)
-			}
-			if(sigma) {
-				params.sigma = parseFloat(sigma)
-			}
-			if(theta) {
-				params.theta = parseFloat(theta)
-			}
-
-			const fit = await Bluecrowe.getFit(params);
-			res.send(fit);
-		}
-		catch(error) {
-			console.log(error)
-			res.status(500).send('Data Fit Error = ' + error);
-		}
-	},
-		
-	async getScenarios(req, res) {
-		try {
-			const {kappa, sigma, theta, x_0, x_0_date} = req.query;
-			const query = {
-				kappa: parseFloat(kappa),
-				sigma: parseFloat(sigma),
-				theta: parseFloat(theta),
-				x_0:  parseFloat(x_0),
-				x_0_date: parseInt(x_0_date)
-			}
-
-			const result = await Bluecrowe.getScenarios(query);
-			res.send(result);
-		}
-		catch(error) {
-			console.log(error)
-			res.status(500).send('Data Scenarios Error = ' + error);
-		}
-	},
-		
-	async getBarrierScenarios(req, res) {
-		try {
-			const result = await Bluecrowe.getBarrierScenarios();
-			res.send(result);
-		}
-		catch(error) {
-			console.log(error)
-			res.status(500).send('Data Barrier Scenarios Error = ' + error);
-		}
-	},
-
-	async findTs(req, res) {
+	/**
+	 * Retreve the full strategy and populate the ts reference
+	 * 
+	 * @param {Request} req 
+	 * @param {Response} res 
+	 */
+	async findStrategy(req, res) {
 		try {
 			const {user} = req;
-			const {timeseriesId} = req.query;
+			const {strategyId} = req.query;
 
 			const query = {
-				_id: timeseriesId, 
-				user: user
+				_id: strategyId, 
+				user: user._id
 			};
-			const results =  await Timeseries.findOne(query).exec();
+			const results =  await Strategy.findOne(query).lean().exec();
 			res.send(results);
 		}
 		catch(e) {
@@ -147,27 +32,43 @@ module.exports = {
 		}
 	},
 	
+	/**
+	 * Create a strategy from the upload time series
+	 * TODO error handling...
+	 * 
+	 * 1. Associate with a strategy with timeseries
+	 * 2. Set the default fit process to NONE
+	 * 3. Add an entry for user history
+	 * 
+	 * @param {Request} req contains name, timeseries data, and the source, CVS, AV or other
+	 * @param {Response} res Set the strategy on the response
+	 */
 	async upload(req, res) {
 		try {
 			const {user} = req;
-			const {name, ts, source} = req.body;
+			const {name, data, source} = req.body;
 
-			const timeSeries = new Timeseries({
+			const userHistory = new UserHistory({
+				action: 'ADD_LIBRARY',
+				meta: source,
+				user: user._id
+			});
+			await userHistory.save();
+
+			const strategy = new Strategy({
 				name,
 				source,
 				fit: {
 					proctype: 'NONE'
 				},
-				ts,
-				user
+				ts: {
+					source,
+					data
+				},
+				user: user._id
 			})
-			const userHistory = new UserHistory({
-				action: 'ADD_LIBRARY',
-				meta: source,
-				user
-			});
-			await userHistory.save();
-			res.send(await Timeseries.create(timeSeries));
+
+			res.send(await strategy.save());
 		}
 		catch(e) {
 			console.log(e)
@@ -178,9 +79,14 @@ module.exports = {
 	},
 
 	/**
-	 * Limit size of 0 returns only meta data, lazy load the time series
+	 * Retrieve the library of stratgeies for a user
+	 * 
+	 * 1. Add the name filter if required
+	 * 2. Include the unpopulated ts
+	 * 3. Always sort by most relevent i.e. by the last modified date
+	 * 4. Dont include the fit object yet
 	 */
-  async library (req, res) {
+  async listStrategies (req, res) {
 		const {user} = req;
 		const {page, nameFilter, pageSize} = req.query
     const query = {
@@ -193,10 +99,11 @@ module.exports = {
 			sort: { 
 				lastUpdate: -1 
 			},
-			select: '-ts -fit'
+			select: '-fit -ts',
+			lean: true
     }
 		try {
-			const results = await Timeseries.page(query, options)
+			const results = await Strategy.paginate(query, options)
 			res.send(results);
 		}
 		catch(e) {
@@ -234,74 +141,37 @@ module.exports = {
 		}
 	},
 	
+	/**
+	 * Remove a strategy and underlying timeseries.
+	 * Becarefull of the double click so make sure the strategy exists before
+	 * deleting underlying timeseries
+	 * 
+	 * @param {Request} req 
+	 * @param {Response} res 
+	 */
 	async remove (req, res) {
 		const {user} = req;
 		const {id} = req.body
 		try {
-			const query = {
+			let query = {
 				_id: id, 
-				user: user
+				user: user._id
 			};
 			
-			const results =  await Timeseries.findOneAndRemove(query).exec();
-			const userHistory = new UserHistory({
-				action: 'REMOVE_LIBRARY',
-				user
-			});
-			await userHistory.save();
-			res.send(results);
+			const strategy =  await Strategy.findOneAndDelete(query).exec();
+			if(strategy) {
+				const userHistory = new UserHistory({
+					action: 'REMOVE_LIBRARY',
+					user
+				});
+				await userHistory.save();
+			}
+			res.send(strategy);
 		}
 		catch(e) {
 			console.log(e)
 			res.status(500).send({
         error: 'An error has occured trying to remove ' + e
-      })
-		}
-	},
-	
-	async find (req, res) {
-		const {user} = req;
-		const {id} = req.query
-		try {
-			const query = {
-				_id: id, 
-				user: user
-			};
-    	const results =  await Timeseries.findOne(query).exec();
-			res.send(results);
-		}
-		catch(e) {
-			console.log(e)
-			res.status(500).send({
-        error: 'An error has occured trying to remove ' + e
-      })
-		}
-	},
-	
-	async findAlphavantage (req, res) {
-		const {ticker} = req.query;
-		try {
-			const results =  await Alphavantage.get(ticker);
-			res.send(results);
-		}
-		catch(e) {
-			console.log(e)
-			res.status(500).send({
-        error: 'An error retrieving data from Alphavantage ' + e
-      })
-		}
-	},
-	
-	async findInvesting (req, res) {
-		const {curr_id, startDate, endDate} = req.query;
-		try {
-			const results =  await Investing.get(curr_id, startDate, endDate);
-			res.send(results);
-		}
-		catch(e) {
-			console.log(e)
-			res.status(500).send({
-        error: 'An error retrieving data from Investing ' + e
       })
 		}
 	},
@@ -328,6 +198,119 @@ module.exports = {
 			console.log(e)
 			res.status(500).send({
         error: 'An error updating fit ' + e
+      })
+		}
+	},
+
+	/**
+	 * Retrieve a dictionary
+	 * 
+	 * @param {*} req 
+	 * @param {*} res 
+	 */
+	async listDictionary (req, res) {
+		const {user} = req;
+		const {type} = req.query
+		try {
+
+			if(type === 'library') {
+				let query = {
+					user: user._id
+				};
+				res.send(await Strategy.find(query).select('_id name').sort({name: 'asc'}).lean().exec());
+			}
+			else {
+				let query = {
+					type
+				};
+				res.send(await Dictionary.find(query).sort({name: 'asc'}).lean().exec());
+			}
+		}
+		catch(e) {
+			console.log(e)
+			res.status(500).send({
+        error: `An error has occured trying to find ${type} ` + e
+      })
+		}
+	},
+
+	/**
+	 * Find the series from a given source
+	 * 
+	 * Sources:
+	 * 1. Library - extract series from strategy
+	 * 2. Investing.com - index, commodities, currency, crypto's
+	 * 3. Alphavantage - equities
+	 * 
+	 * (2, 3) are cached timeseries, so check cache first
+	 * 
+	 * TODO exception handling
+	 * 
+	 */
+	async findTimeseries (req, res) {
+		const {user} = req;
+		const {type, source} = req.query;
+
+		try {
+			if(source === 'Library') {
+				let query = {
+					user: user._id,
+					_id: type
+				};
+
+				let select = {
+					fit: 0,
+					_id: 0,
+					user: 0
+				}
+				res.send(await Strategy.findOne(query).select(select).exec());
+			}
+			else {
+				// Look up cache first
+				let query = {
+					name: type
+				};
+				let series = await Timeseries.findOne(query).lean().exec()
+				if(series) {
+					res.send(series)
+				}
+				// Not in cache, so look it up
+				else {
+					if(source === 'Investing.com') {
+						let results =  await Investing.get(type);
+						let series = new Timeseries({
+							name: type,
+							source,
+							data: results
+						})
+						series.save();
+						res.send(series)
+					}
+					else {
+						let results =  await Alphavantage.get(type);
+						if(results.length > 0) {
+							let series = new Timeseries({
+								name: type,
+								source,
+								data: results
+							})
+							series.save();
+							res.send(series)
+						}
+						else {
+							res.status(404).send({
+								errorCode: 404,
+								msg: `Unable to locate ${type}`
+							});
+						}
+					}
+				}
+			}
+		}
+		catch(e) {
+			console.log(e)
+			res.status(500).send({
+        error: `An error has occured trying to find ${type} ` + e
       })
 		}
 	}

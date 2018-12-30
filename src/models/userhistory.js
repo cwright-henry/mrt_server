@@ -13,13 +13,17 @@ const UserHistorySchema = new mongoose.Schema({
 		trim: true,
 		default: ''
 	},
-	created: {
-		type: Date,
-		default: Date.now
-	},
 	user: {
 		type: Schema.Types.ObjectId,
 		ref: 'user'
+	},
+	created: {
+		type: Number,
+		default: Date.now
+	},
+	lastUpdate: {
+		type: Number,
+		default: Date.now
 	}
 });
 

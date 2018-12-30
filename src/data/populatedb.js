@@ -4,10 +4,11 @@ console.log('Populating collections...')
 
 const fs = require('fs');
 const moment = require('moment');
-const Timeseries = require('../models/timeseries');
-const Users = require('../models/users');
+const Strategy = require('../models/strategies');
+const User = require('../models/users');
 const UserHistory = require('../models/userhistory');
-const Bluecrowe = require('../services/bluecrowe');
+const Dictionary = require('../models/Dictionary');
+const MRT = require('../services/MRT');
 const config = require('../config/config');
 
 // Setup DB connection
@@ -29,6 +30,8 @@ const fileImports = [
 	{path:__dirname + '/gefly.json', dateFomat: DATE_FORMAT, value:'GE210530'},
 	{path:__dirname + '/mm3.json', dateFomat: DATE_FORMAT, value:'MR series 3'}
 ];
+
+const InvestImports = __dirname + '/investingtickerdict.csv';
 
 function parseFile(path, dateFormat, value) {
 	return new Promise(function(resolve, reject){
@@ -64,14 +67,50 @@ function parseFile(path, dateFormat, value) {
 	});
 }
 
+function parseInvestingFile(path) {
+	return new Promise(function(resolve, reject){
+		fs.readFile(path, 'utf8', (err, contents) => {
+			if(err) {
+				return reject(err);
+			}
+			else {
+				const lines = contents.split(/\r\n|\n/);
+				const entries = [];
+        for (let i = 0; i < lines.length; i++) {
+					let data = lines[i].split(',')
+					entries.push({
+						name: data[0].trim(),
+						curr_id: data[1].trim(),
+						type: data[2].trim(),
+						source: 'Investing.com'
+					})
+				}
+				
+				console.log(`Parsed ${path} ...`);
+				return resolve(entries);
+			}
+		});
+	});
+}
+
+function createDictionary({name, curr_id, type, source}) {
+	const dictionary = new Dictionary({
+		name,
+		curr_id,
+		type,
+		source
+	})
+	return Dictionary.create(dictionary);
+}
+
 function createUser(firstName, lastName, email, password) {
-	const newUser = new Users({
+	const newUser = new User({
 		firstName,
 		lastName,
 		email,
 		password
 	})
-	return Users.create(newUser);
+	return User.create(newUser);
 }
 
 function createUserHistory(action, meta, user) {
@@ -83,18 +122,24 @@ function createUserHistory(action, meta, user) {
 	return userHistory.save();
 }
 
-function createTimeseries(name, series, user) {
-	const ts = new Timeseries({
+function createStrategy(name, ts, user) {
+	const strategy = new Strategy({
 		name,
 		fit: {
 			proctype: 'NONE'
 		},
-		ts:series,
+		ts: {
+			data: ts
+		},
 		user
 	});
-	return Timeseries.create(ts);
+
+	return strategy.save();
 }
 
+/**
+ * Deprecated - using dropDatabase instead
+ */
 function dropCollection() {
 	return new Promise( (resolve, reject) => {
 		db.dropCollection('timeseries', (err, result) => {
@@ -109,11 +154,14 @@ function dropCollection() {
 	});
 }
 
+/**
+ * Deprecated - imported with proctype = NONE
+ */
 function fit(series) {
 	return new Promise((resolve, reject) => {
 		const p = [];
 		series.forEach(item => {
-			p.push(Bluecrowe.getFit({ts:item.data}));
+			p.push(MRT.getFit({ts:item.data}));
 		});
 		Promise.all(p)
 		.then(results => {
@@ -137,11 +185,11 @@ function parseFiles() {
 	return Promise.all(p)
 }
 
-function saveTimeseries(series, user) {
+function saveStrategies(series, user, index) {
 	return new Promise((resolve, reject) => {
 		const p = [];
 		series.forEach(item => {
-			p.push(createTimeseries(item.name, item.data, user));
+			p.push(createStrategy(index ? (item.name + index) : item.name, item.data, user));
 			p.push(createUserHistory('ADD_LIBRARY', 'AUTO_POOPULATE', user));
 		});
 		Promise.all(p)
@@ -152,15 +200,31 @@ function saveTimeseries(series, user) {
 	});
 }
 
+async function saveIvestingTickers() {
+	let data = await parseInvestingFile(InvestImports)
+	for(let i = 0; i < data.length; i++) {
+		createDictionary(data[i]);
+	}
+}
+
 async function init() {
 	console.log(`Connected to Mongo ...`);
 	const time = process.hrtime();
 	try {
-		await dropCollection();
-		const user = await createUser('admin', 'admin', 'admin@mrt.io', '12345678');
+		mongoose.connection.dropDatabase();
+		saveIvestingTickers();
+		const userMark = await createUser('Mark', 'Scrowston', 'mark@mrt.io', '12345678');
+		const userColin = await createUser('Colin', 'Wright', 'colin@mrt.io', '12345678');
 		const series = await parseFiles();
-		//const series = await fit(data);
-		await saveTimeseries(series, user);
+
+		await saveStrategies(series, userMark);
+		await saveStrategies(series, userColin);
+		// for(let i = 0; i < 10; i++) {
+		// 	await saveStrategies(series, userColin, `_${i}_colin_duplicate`);
+		// }
+		// for(let i = 0; i < 10; i++) {
+		// 	await saveStrategies(series, userMark, `_${i}_mark_duplicate`);
+		// }
 		const diff = process.hrtime(time);
 		const nanoseconds = (diff[0] * 1e9) + diff[1];
 		const seconds = nanoseconds / 1e9;

@@ -1,6 +1,9 @@
 const https = require('https')
 const querystring = require('querystring');
 const cheerio = require('cheerio')
+const moment = require('moment')
+
+const DATE_FORMAT = "DD/MM/YYYY"
 
 class Investing {
 	static _request({curr_id, st_date, end_date}) {
@@ -72,8 +75,11 @@ class Investing {
 		return data;
 	}
 
-	static async get(curr_id, st_date, end_date) {
-		let result = await Investing._request({curr_id, st_date, end_date});
+	static async get(curr_id) {
+		const end_date = moment().format(DATE_FORMAT)
+		const st_date = moment().add(-12, 'months').format(DATE_FORMAT)
+
+		const result = await Investing._request({curr_id, st_date, end_date});
 		return await Investing._parse(result)
 	}
 }
