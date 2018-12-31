@@ -191,7 +191,7 @@ module.exports = {
 		}
 		
 		try {
-			const results =  await Timeseries.findOneAndUpdate(query, update, {new: true}).exec();
+			const results =  await Strategy.findOneAndUpdate(query, update, {new: true}).exec();
 			res.send(results);
 		}
 		catch(e) {
