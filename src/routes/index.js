@@ -1,6 +1,5 @@
 const AuthenticationController = require('../controllers/AuthenticationController')
 const ApiController = require('../controllers/ApiController')
-const ExternalController = require('../controllers/ExternalController')
 const MRTController = require('../controllers/MRTController')
 const AuthenticationControllerPolicy = require('../policies/AuthenticationControllerPolicy')
 const isAuthenticated = require('../policies/isAuthenticated')
@@ -10,10 +9,6 @@ module.exports = (app) => {
 	// Authentication
 	app.post('/api/register', AuthenticationControllerPolicy.register, AuthenticationController.register)
 	app.post('/api/login', AuthenticationController.login)
-
-	// External Api
-	app.get('/api/investing', isAuthenticated, ExternalController.findInvesting)
-	app.get('/api/alphavantage', isAuthenticated, ExternalController.findAlphavantage)
 
 	// MRT API
 	app.get('/api/data-all', isAuthenticated, MRTController.getAll)
