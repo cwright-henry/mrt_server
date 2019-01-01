@@ -8,13 +8,14 @@ const esTransportOpts = {
 const Logger = winston.createLogger({
 	format: winston.format.json(),
   transports: [
-    new Elasticsearch(esTransportOpts)
+//    new Elasticsearch(esTransportOpts)
   ]
 })
 
 Logger.stream = {
   write: function(message, encoding) {
-    Logger.info('message', JSON.parse(message));
+//    Logger.info('message', JSON.parse(message));
+    console.log(message)
   }
 }
 
