@@ -203,7 +203,7 @@ module.exports = {
 	},
 
 	/**
-	 * Retrieve a dictionary
+	 * Retrieve a dictionary.
 	 * 
 	 * @param {*} req 
 	 * @param {*} res 

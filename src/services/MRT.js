@@ -62,21 +62,10 @@ class MRT {
 			const value = ts[i][1]
 			data[date] = value;
 		}
-		start_date = moment.utc(start_date).format(DATE_FORMAT)
-		end_date = moment.utc(end_date).format(DATE_FORMAT)
 
 		return await MRT._request({path: 'data/fit_all', data: JSON.stringify({proctype, kappa, sigma, theta, ts: data, start_date, end_date})})
 			.then((response) => JSON.parse(response))
 			.then((response) => {
-				if(response.start_date) {
-					response.start_date = moment.utc(response.start_date, DATE_FORMAT).valueOf();
-				}
-				if(response.end_date) {
-					response.end_date = moment.utc(response.end_date, DATE_FORMAT).valueOf();
-				}
-				if(response.x_0_date) {
-					response.x_0_date = moment.utc(response.x_0_date, DATE_FORMAT).valueOf();
-				}
 				if(response.resid) {
 					const arr = []
 					for(let t in response.resid) {
