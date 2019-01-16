@@ -7,6 +7,19 @@ const x_0 = Joi.number();
 const x_0_date = Joi.number().positive();
 const nsteps =  Joi.number().positive();
 const seed =  Joi.number().positive();
+const point = Joi.array().items(Joi.number().required(), Joi.number().required()).single();
+const timeseries = Joi.array().items(point)
+
+const getFitSchema = {
+	body: Joi.object().keys({
+		kappa: kappa.allow(null).optional(),
+		sigma: sigma.allow(null).optional(),
+		theta: theta.allow(null).optional(),
+		ts: timeseries.required(),
+		start_date: Joi.number().required(),
+		end_date: Joi.number().required()
+	})
+}
 
 const getScenariosSchema = {
 	query: Joi.object().keys({
@@ -20,12 +33,21 @@ const getScenariosSchema = {
 	})
 }
 
+/**
+ * Generic request validation. Converted parameters are aaded to the request object
+ * as validated.
+ * 
+ * @param {JOI.any} requestSchema Schema defined for request type
+ * @param {*} req 
+ * @param {*} res 
+ * @param {*} next 
+ */
 const validateRequest = (requestSchema, req, res, next) => {
 	const validations = ['headers', 'params', 'query', 'body']
 		.map(key => {
 			const schema = requestSchema[key];
 			const value = req[key];
-			const validate = () => schema ? schema.validate(value) : Promise.resolve({});
+			const validate = () => schema ? schema.validate(value, {abortEarly: false}) : Promise.resolve({});
 			return validate().then(result => ({[key]: result}));
 		});
 	return Promise.all(validations)
@@ -43,5 +65,6 @@ const validateRequest = (requestSchema, req, res, next) => {
 };
 
 module.exports = {
-	getScenarios: (req, res,next) => validateRequest(getScenariosSchema, req, res, next)
+	getScenarios: (req, res,next) => validateRequest(getScenariosSchema, req, res, next),
+	getFit: (req, res,next) => validateRequest(getFitSchema, req, res, next)
 }

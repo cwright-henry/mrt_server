@@ -74,7 +74,7 @@ class MRT {
 			})
 	}
 
-	static async getFit({proctype = 'OU', kappa = 'nan', sigma = 'nan', theta = 'nan', start_date = new Date().getTime(), end_date = new Date().getTime(), ts = []} = {}) {
+	static async getFit({proctype='OU', kappa='nan', sigma='nan', theta='nan', start_date, end_date, ts} = {}) {
 		const data = {};
 		for(let i = 0; i < ts.length; i++) {
 			const date = ts[i][0]
