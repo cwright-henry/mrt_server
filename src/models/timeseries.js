@@ -24,7 +24,7 @@ const TimeSeriesSchema = new Schema({
 	data: [],
 	createdAt: { 
 		type: Date, 
-		expires: '1m', 
+		expires: '30d', 
 		default: Date.now 
 	}
 });

@@ -2,8 +2,10 @@ const https = require('https')
 const querystring = require('querystring');
 const cheerio = require('cheerio')
 const moment = require('moment')
+const InvestingError = require('../errors/InvestingError')
 
 const DATE_FORMAT = "DD/MM/YYYY"
+const NUM_MONTHS = -120
 
 class Investing {
 	static _request({curr_id, st_date, end_date}) {
@@ -76,11 +78,16 @@ class Investing {
 	}
 
 	static async get(curr_id) {
-		const end_date = moment().format(DATE_FORMAT)
-		const st_date = moment().add(-12, 'months').format(DATE_FORMAT)
+		try {
+			const end_date = moment().format(DATE_FORMAT)
+			const st_date = moment().add(NUM_MONTHS, 'months').format(DATE_FORMAT)
 
-		const result = await Investing._request({curr_id, st_date, end_date});
-		return await Investing._parse(result)
+			const result = await Investing._request({curr_id, st_date, end_date});
+			return await Investing._parse(result)
+		}
+		catch(error) {
+			throw new InvestingError(`${error}`, {curr_id})
+		}
 	}
 }
 

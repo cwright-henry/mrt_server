@@ -13,23 +13,15 @@ module.exports = {
 	 * @param {Response} res 
 	 */
 	async findStrategy(req, res) {
-		try {
-			const {user} = req;
-			const {strategyId} = req.query;
+		const {user} = req;
+		const {strategyId} = req.query;
 
-			const query = {
-				_id: strategyId, 
-				user: user._id
-			};
-			const results =  await Strategy.findOne(query).lean().exec();
-			res.send(results);
-		}
-		catch(e) {
-			console.log(e)
-			res.status(500).send({
-        error: 'An error has occured trying to upload file ' + e
-      })
-		}
+		const query = {
+			_id: strategyId, 
+			user: user._id
+		};
+
+		res.send(await Strategy.findOne(query).lean().exec());
 	},
 	
 	/**
@@ -44,47 +36,36 @@ module.exports = {
 	 * @param {Response} res Set the strategy on the response
 	 */
 	async upload(req, res) {
-		try {
-			const {user} = req;
-			const {name, data, source} = req.body;
+		const {user} = req;
+		const {name, data, source} = req.body;
 
-			const userHistory = new UserHistory({
-				action: 'ADD_LIBRARY',
-				meta: source,
-				user: user._id
-			});
-			await userHistory.save();
+		const userHistory = new UserHistory({
+			action: 'ADD_LIBRARY',
+			meta: source,
+			user: user._id
+		});
+		await userHistory.save();
 
-			const strategy = new Strategy({
-				name,
+		const strategy = new Strategy({
+			name,
+			source,
+			fit: {
+				proctype: 'NONE'
+			},
+			ts: {
 				source,
-				fit: {
-					proctype: 'NONE'
-				},
-				ts: {
-					source,
-					data
-				},
-				user: user._id
-			})
+				data
+			},
+			user: user._id
+		})
 
-			res.send(await strategy.save());
-		}
-		catch(e) {
-			console.log(e)
-			res.status(500).send({
-        error: 'An error has occured trying to upload file ' + e
-      })
-		}
+		res.send(await strategy.save());
 	},
 
 	/**
-	 * Retrieve the library of stratgeies for a user
+	 * Access to the library of strategies is paginated, pagination
+	 * is provided by a pagination plugin
 	 * 
-	 * 1. Add the name filter if required
-	 * 2. Include the unpopulated ts
-	 * 3. Always sort by most relevent i.e. by the last modified date
-	 * 4. Dont include the fit object yet
 	 */
   async listStrategies (req, res) {
 		const {user} = req;
@@ -102,16 +83,8 @@ module.exports = {
 			select: '-fit -ts',
 			lean: true
     }
-		try {
-			const results = await Strategy.paginate(query, options)
-			res.send(results);
-		}
-		catch(e) {
-			console.log(e)
-			res.status(500).send({
-        error: 'An error has occured trying to paginate library ' + e
-      })
-		}
+		
+		res.send(await Strategy.paginate(query, options));
 	},
 
 	async userHistory (req, res) {
@@ -129,16 +102,8 @@ module.exports = {
 				created: -1 
 			}
     }
-		try {
-			const results = await UserHistory.page(query, options)
-			res.send(results);
-		}
-		catch(e) {
-			console.log(e)
-			res.status(500).send({
-        error: 'An error has occured trying to paginate user history' + e
-      })
-		}
+		
+		res.send(await UserHistory.page(query, options));
 	},
 	
 	/**
@@ -152,28 +117,21 @@ module.exports = {
 	async remove (req, res) {
 		const {user} = req;
 		const {id} = req.body
-		try {
-			let query = {
-				_id: id, 
-				user: user._id
-			};
-			
-			const strategy =  await Strategy.findOneAndDelete(query).exec();
-			if(strategy) {
-				const userHistory = new UserHistory({
-					action: 'REMOVE_LIBRARY',
-					user
-				});
-				await userHistory.save();
-			}
-			res.send(strategy);
+
+		const query = {
+			_id: id, 
+			user: user._id
+		};
+		
+		const strategy =  await Strategy.findOneAndDelete(query).exec();
+		if(strategy) {
+			const userHistory = new UserHistory({
+				action: 'REMOVE_LIBRARY',
+				user
+			});
+			await userHistory.save();
 		}
-		catch(e) {
-			console.log(e)
-			res.status(500).send({
-        error: 'An error has occured trying to remove ' + e
-      })
-		}
+		res.send(strategy);
 	},
 	
 	async saveOUFit (req, res) {
@@ -189,21 +147,12 @@ module.exports = {
 			lastUpdate: Date.now(),
 			fit: fit
 		}
-		
-		try {
-			const results =  await Strategy.findOneAndUpdate(query, update, {new: true}).exec();
-			res.send(results);
-		}
-		catch(e) {
-			console.log(e)
-			res.status(500).send({
-        error: 'An error updating fit ' + e
-      })
-		}
+		res.send(await Strategy.findOneAndUpdate(query, update, {new: true}).exec());
 	},
 
 	/**
-	 * Retrieve a dictionary.
+	 * Retrieve a dictionary either from the existing library or
+	 * preconfigured library
 	 * 
 	 * @param {*} req 
 	 * @param {*} res 
@@ -211,26 +160,18 @@ module.exports = {
 	async listDictionary (req, res) {
 		const {user} = req;
 		const {type} = req.query
-		try {
 
-			if(type === 'library') {
-				let query = {
-					user: user._id
-				};
-				res.send(await Strategy.find(query).select('_id name').sort({name: 'asc'}).lean().exec());
-			}
-			else {
-				let query = {
-					type
-				};
-				res.send(await Dictionary.find(query).sort({name: 'asc'}).lean().exec());
-			}
+		if(type === 'library') {
+			let query = {
+				user: user._id
+			};
+			res.send(await Strategy.find(query).select('_id name').sort({name: 'asc'}).lean().exec());
 		}
-		catch(e) {
-			console.log(e)
-			res.status(500).send({
-        error: `An error has occured trying to find ${type} ` + e
-      })
+		else {
+			let query = {
+				type
+			};
+			res.send(await Dictionary.find(query).sort({name: 'asc'}).lean().exec());
 		}
 	},
 
@@ -251,33 +192,43 @@ module.exports = {
 		const {user} = req;
 		const {type, source} = req.query;
 
-		try {
-			if(source === 'Library') {
-				let query = {
-					user: user._id,
-					_id: type
-				};
+		if(source === 'Library') {
+			let query = {
+				user: user._id,
+				_id: type
+			};
 
-				let select = {
-					fit: 0,
-					_id: 0,
-					user: 0
-				}
-				res.send(await Strategy.findOne(query).select(select).exec());
+			let select = {
+				fit: 0,
+				_id: 0,
+				user: 0
 			}
+			res.send(await Strategy.findOne(query).select(select).exec());
+		}
+		else {
+			// Look up cache first
+			let query = {
+				name: type
+			};
+			let series = await Timeseries.findOne(query).lean().exec()
+			if(series) {
+				res.send(series)
+			}
+			// Not in cache, so look it up
 			else {
-				// Look up cache first
-				let query = {
-					name: type
-				};
-				let series = await Timeseries.findOne(query).lean().exec()
-				if(series) {
+				if(source === 'Investing.com') {
+					let results =  await Investing.get(type);
+					let series = new Timeseries({
+						name: type,
+						source,
+						data: results
+					})
+					series.save();
 					res.send(series)
 				}
-				// Not in cache, so look it up
 				else {
-					if(source === 'Investing.com') {
-						let results =  await Investing.get(type);
+					let results =  await Alphavantage.get(type);
+					if(results.length > 0) {
 						let series = new Timeseries({
 							name: type,
 							source,
@@ -286,32 +237,8 @@ module.exports = {
 						series.save();
 						res.send(series)
 					}
-					else {
-						let results =  await Alphavantage.get(type);
-						if(results.length > 0) {
-							let series = new Timeseries({
-								name: type,
-								source,
-								data: results
-							})
-							series.save();
-							res.send(series)
-						}
-						else {
-							res.status(404).send({
-								errorCode: 404,
-								msg: `Unable to locate ${type}`
-							});
-						}
-					}
 				}
 			}
-		}
-		catch(e) {
-			console.log(e)
-			res.status(500).send({
-        error: `An error has occured trying to find ${type} ` + e
-      })
 		}
 	}
 }

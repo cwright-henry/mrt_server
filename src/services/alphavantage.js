@@ -1,3 +1,5 @@
+const AlphavantageError = require('../errors/AlphavantageError')
+
 const https = require('https');
 const moment = require('moment');
 const dateFormat='YYYY-MM-DD'
@@ -23,8 +25,9 @@ class Alphavantage {
 				});
 
 				result.on("end", () => {
-					if(result.statusCode == 200) 
+					if(result.statusCode == 200) {
 						return resolve(Buffer.concat(buffers)) 
+					}
 					return reject(Buffer.concat(buffers));
 				});
 			});
@@ -52,8 +55,22 @@ class Alphavantage {
 	}
 
 	static async get(ticker) {
-		let result = await Alphavantage._request(ticker).then((response) => JSON.parse(response));
-		return await Alphavantage._parse(result)
+		const result = await Alphavantage._request(ticker)
+			.then((response) => JSON.parse(response))
+			.catch((error) => {
+				throw new AlphavantageError(`${err}`, {ticker})
+			})
+		if(result['Error Message']) {
+			const err = new Error(`Unable to locate ` + ticker)
+			err.statusCode = 400;
+			throw err;
+		}
+		try {
+			return await Alphavantage._parse(result)
+		}
+		catch(err) {
+			throw new AlphavantageError(`${err}`, {ticker})
+		}
 	}
 }
 
