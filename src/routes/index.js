@@ -17,6 +17,7 @@ module.exports = (app) => {
 	app.get('/api/data-prob', isAuthenticated, asyncMiddleware(MRTController.getProb))
 	app.get('/api/data-epnl', isAuthenticated, asyncMiddleware(MRTController.getEpnl))
 	app.get('/api/data-et', isAuthenticated, asyncMiddleware(MRTController.getEt))
+	app.post('/api/fit-lse', [isAuthenticated, validate.getFitLSE], asyncMiddleware(MRTController.getFitLSE))
 	app.post('/api/fit', [isAuthenticated, validate.getFit], asyncMiddleware(MRTController.getFit))
 	app.get('/api/data-get-scenarios', [isAuthenticated, validate.getScenarios], asyncMiddleware(MRTController.getScenarios))
 	app.get('/api/data-get-barrier-scenarios', isAuthenticated, asyncMiddleware(MRTController.getBarrierScenarios))

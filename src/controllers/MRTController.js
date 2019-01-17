@@ -1,5 +1,8 @@
 const MRT = require('../services/MRT');
 
+/**
+ * Simple proxy onto MRT lib server
+ */
 module.exports = {
 	async getAll(req, res) {
 		const {kappa, sigma, theta, carry, x_T, trans_oneway_stdev} = req.query;
@@ -29,17 +32,33 @@ module.exports = {
 		const result = await MRT.getEt();
 		res.send(result);
 	},
+
+	/**
+	 * Fit 2 timeseries, by default we are using LSPairfit
+	 * 
+	 * @param {*} req 
+	 * @param {*} res 
+	 */
+	async getFitLSE(req, res) {
+		let {ts1, ts2} = req.validated.body;
+
+		const params = {
+			ts1,
+			ts2
+		}
+
+		res.send(await MRT.getFitLSE(params));
+	},
 		
+	/**
+	 * Fit a timeseries. The first time this is called a strategy has no
+	 * kappa, sigma or theta so these are optional
+	 * 
+	 * @param {*} req 
+	 * @param {*} res 
+	 */
 	async getFit(req, res) {
-		let {ts, start_date, end_date, kappa, sigma, theta} = req.body;
-
-		if(!start_date) {
-			start_date = ts[0][0]
-		}
-
-		if(!end_date) {
-			end_date = ts[ts.length - 1][0]
-		}
+		let {ts, start_date, end_date, kappa, sigma, theta} = req.validated.body;
 
 		const params = {
 			ts,
@@ -48,13 +67,13 @@ module.exports = {
 		}
 
 		if(kappa) {
-			params.kappa = parseFloat(kappa)
+			params.kappa = kappa
 		}
 		if(sigma) {
-			params.sigma = parseFloat(sigma)
+			params.sigma = sigma
 		}
 		if(theta) {
-			params.theta = parseFloat(theta)
+			params.theta = theta
 		}
 
 		const fit = await MRT.getFit(params);

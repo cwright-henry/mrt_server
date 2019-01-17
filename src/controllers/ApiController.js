@@ -136,7 +136,7 @@ module.exports = {
 	
 	async saveOUFit (req, res) {
 		const {user} = req;
-		const {id, fit} = req.body;
+		const {id, fit, name} = req.body;
 
 		const query = {
 			_id: id, 
@@ -145,7 +145,8 @@ module.exports = {
 
 		const update = {
 			lastUpdate: Date.now(),
-			fit: fit
+			fit: fit,
+			name,
 		}
 		res.send(await Strategy.findOneAndUpdate(query, update, {new: true}).exec());
 	},

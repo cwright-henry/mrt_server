@@ -10,6 +10,13 @@ const seed =  Joi.number().positive();
 const point = Joi.array().items(Joi.number().required(), Joi.number().required()).single();
 const timeseries = Joi.array().items(point)
 
+const getFitLSESchema = {
+	body: Joi.object().keys({
+		ts1: timeseries.required(),
+		ts2: timeseries.required()
+	})
+}
+
 const getFitSchema = {
 	body: Joi.object().keys({
 		kappa: kappa.allow(null).optional(),
@@ -66,5 +73,6 @@ const validateRequest = (requestSchema, req, res, next) => {
 
 module.exports = {
 	getScenarios: (req, res,next) => validateRequest(getScenariosSchema, req, res, next),
-	getFit: (req, res,next) => validateRequest(getFitSchema, req, res, next)
+	getFit: (req, res,next) => validateRequest(getFitSchema, req, res, next),
+	getFitLSE: (req, res,next) => validateRequest(getFitLSESchema, req, res, next)
 }

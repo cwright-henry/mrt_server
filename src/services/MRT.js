@@ -5,6 +5,18 @@ const genUUID = () => {
 	return parseInt(Math.random().toString().slice(2,18))
 }
 
+const arrayToObject = (ts) => {
+	const obj = {};
+	if(ts) {
+		for(let i = 0; i < ts.length; i++) {
+			const date = ts[i][0]
+			const value = ts[i][1]
+			obj[date] = value;
+		}
+	}
+	return obj
+}
+
 class MRT {
 	static _request({path, data}) {
 		const opts = {
@@ -97,7 +109,37 @@ class MRT {
 				return response;
 			})
 			.catch((error) =>  {
-				throw new MRTError(`${error}`, {proctype, kappa, sigma, theta, ts: data, start_date, end_date})
+				throw new MRTError(`${error}`, {proctype, kappa, sigma, theta, ts: ts.length, start_date, end_date})
+			})
+	}
+
+
+	/**
+	 * Take 2 timeseries and fit them using LSpairfit or OU
+	 * Need to convert response to an array of arrays [[timestamp, value], [timestamp, value] ...] - highchats thing
+	 * 
+	 * @param {String} proctype Either OU or LSPairfit
+	 * @param {Array} ts1 Timeseries
+	 * @param {Array} ts2 Timeseries
+	 */
+	static async getFitLSE({proctype='LSpairfit', ts1, ts2} = {}) {
+
+		return await MRT._request({path: 'data/fit_lse', data: JSON.stringify({proctype, ts: arrayToObject(ts1), ts2: arrayToObject(ts2)})})
+			.then((response) => JSON.parse(response))
+			.then((response) => {
+				if(response.pair_resid) {
+					const arr = []
+					for(let t in response.pair_resid) {
+						if(response.pair_resid.hasOwnProperty(t)) {
+							arr.push([parseInt(t), response.pair_resid[t]])
+						}
+					}
+					response.pair_resid = arr;
+				}
+				return response;
+			})
+			.catch((error) =>  {
+				throw new MRTError(`${error}`, {proctype, ts1:ts1.length, ts2: ts2.length})
 			})
 	}
 
@@ -147,5 +189,6 @@ module.exports = {
 	getEt: MRT.getEt,
 	getFit: MRT.getFit,
 	getScenarios: MRT.getScenarios,
-	getBarrierScenarios: MRT.getBarrierScenarios
+	getBarrierScenarios: MRT.getBarrierScenarios,
+	getFitLSE: MRT.getFitLSE
 }
