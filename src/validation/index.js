@@ -1,5 +1,6 @@
 const Joi = require('joi')
 
+const strategyId = Joi.string().alphanum();
 const kappa = Joi.number();
 const sigma = Joi.number();
 const theta = Joi.number();
@@ -18,11 +19,11 @@ const getFitLSESchema = {
 }
 
 const getFitSchema = {
-	body: Joi.object().keys({
+	query: Joi.object().keys({
 		kappa: kappa.allow(null).optional(),
 		sigma: sigma.allow(null).optional(),
 		theta: theta.allow(null).optional(),
-		ts: timeseries.required(),
+		strategyId: strategyId.required(),
 		start_date: Joi.number().required(),
 		end_date: Joi.number().required()
 	})

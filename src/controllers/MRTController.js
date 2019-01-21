@@ -1,4 +1,6 @@
 const MRT = require('../services/MRT');
+const Strategy = require('../models/strategies');
+const Utils = require('../utils/utils');
 
 /**
  * Simple proxy onto MRT lib server
@@ -52,32 +54,40 @@ module.exports = {
 		
 	/**
 	 * Fit a timeseries. The first time this is called a strategy has no
-	 * kappa, sigma or theta so these are optional
+	 * kappa, sigma or theta so these are optional. The ts is loaded from
+	 * the strategy.
 	 * 
-	 * @param {*} req 
+	 * @param {*} req The JOI validated query
 	 * @param {*} res 
 	 */
 	async getFit(req, res) {
-		let {ts, start_date, end_date, kappa, sigma, theta} = req.validated.body;
+		const {user} = req;
+		let {strategyId, start_date, end_date, kappa, sigma, theta} = req.validated.query;
 
+		let query = {
+			user: user._id,
+			_id: strategyId
+		};
+
+		let strategy = await Strategy.findOne(query).select('ts').lean().exec()
+		
 		const params = {
-			ts,
+			ts: strategy.ts.data,
 			start_date,
 			end_date
 		}
 
-		if(kappa) {
+		if(!Utils.isEmpty(kappa)) {
 			params.kappa = kappa
 		}
-		if(sigma) {
+		if(!Utils.isEmpty(sigma)) {
 			params.sigma = sigma
 		}
-		if(theta) {
+		if(!Utils.isEmpty(theta)) {
 			params.theta = theta
 		}
 
-		const fit = await MRT.getFit(params);
-		res.send(fit);
+		res.send(await MRT.getFit(params));
 	},
 		
 	async getScenarios(req, res) {
