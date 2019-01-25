@@ -25,6 +25,7 @@ module.exports = (app) => {
 	// User API
 	app.post('/api/save-ou-Fit', isAuthenticated, asyncMiddleware(ApiController.saveOUFit))
 	app.get('/api/find-strategy', isAuthenticated, asyncMiddleware(ApiController.findStrategy))
+	app.get('/api/search-strategy', isAuthenticated, asyncMiddleware(ApiController.searchStrategies))
 	app.get('/api/list-strategies', isAuthenticated, asyncMiddleware(ApiController.listStrategies))
 	app.get('/api/userhistory', isAuthenticated, asyncMiddleware(ApiController.userHistory))
 	app.post('/api/upload', isAuthenticated, asyncMiddleware(ApiController.upload))

@@ -62,18 +62,44 @@ module.exports = {
 		res.send(await strategy.save());
 	},
 
-	/**
-	 * Access to the library of strategies is paginated, pagination
-	 * is provided by a pagination plugin
-	 * 
-	 */
-  async listStrategies (req, res) {
+	async searchStrategies (req, res) {
 		const {user} = req;
-		const {page, nameFilter, pageSize} = req.query
+		const {nameFilter} = req.query
     const query = {
 			user: user._id,
 			name: new RegExp(nameFilter, "i")
     }
+    const options = {
+			page: 1,
+			limit: 50000,
+			sort: { 
+				name: 1 
+			},
+			select: '-fit -ts',
+			lean: true
+    }
+		
+		res.send(await Strategy.paginate(query, options));
+	},
+
+	/**
+	 * Access to the library of strategies is paginated, pagination
+	 * is provided by a pagination plugin
+	 * 
+	 * Page: The current page, start at 1
+	 * PageSize: Number of items to retrieve
+	 * strategyIds: Optional list strategy's to only consider
+	 */
+  async listStrategies (req, res) {
+		const {user} = req;
+		const {page, pageSize, overrides} = req.query
+    const query = {
+			user: user._id
+		}
+		const strategyOverrides = JSON.parse(overrides) // Need JOI to do this for us
+		if(strategyOverrides.length > 0) {
+			query._id = { $in: strategyOverrides}
+		}
     const options = {
 			page: page,
 			limit: parseInt(pageSize),
