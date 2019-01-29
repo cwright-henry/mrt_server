@@ -17,11 +17,11 @@ const HypOUFittingSchema = new mongoose.Schema({
 		type: Number,
 		default: 0.0
 	},
-	nBeta: {
+	nbeta: {
 		type: Number,
 		default: 1.0
 	},
-	nBeta_full: {
+	nbeta_full: {
 		type: Number,
 		default: 1.0
 	},
