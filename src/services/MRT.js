@@ -58,7 +58,7 @@ class MRT {
 		return await MRT._request({path: 'data/all2', data: JSON.stringify({proctype, kappa, sigma, theta, carry, x_T, trans_oneway_stdev})})
 			.then((response) => JSON.parse(response))
 			.catch((error) =>  {
-				throw new MRTError(`${error}`, {proctype, kappa, sigma, theta, carry, x_T, trans_oneway_stdev})
+				throw new MRTError('UNKNOWN_ERROR', `${error}`, {proctype, kappa, sigma, theta, carry, x_T, trans_oneway_stdev}, 500)
 			})
 	}
 
@@ -66,7 +66,7 @@ class MRT {
 		return await MRT._request({path: 'data/prob', data: JSON.stringify({kappa, sigma, theta, carry, x_T})})
 			.then((response) => JSON.parse(response))
 			.catch((error) =>  {
-				throw new MRTError(`${error}`, {kappa, sigma, theta, carry, x_T})
+				throw new MRTError('UNKNOWN_ERROR', `${error}`, {kappa, sigma, theta, carry, x_T}, 500)
 			})
 	}
 
@@ -74,7 +74,7 @@ class MRT {
 		return await MRT._request({path: 'data/epnl', data: JSON.stringify({kappa, sigma, theta, carry, x_T, trans_oneway_stdev})})
 			.then((response) => JSON.parse(response))
 			.catch((error) =>  {
-				throw new MRTError(`${error}`, {kappa, sigma, theta, carry, x_T, trans_oneway_stdev})
+				throw new MRTError('UNKNOWN_ERROR', `${error}`, {kappa, sigma, theta, carry, x_T, trans_oneway_stdev}, 500)
 			})
 	}
 
@@ -82,7 +82,7 @@ class MRT {
 		return await MRT._request({path: 'data/et2', data: JSON.stringify({kappa, sigma, theta, carry, x_T})})
 			.then((response) => JSON.parse(response))
 			.catch((error) =>  {
-				throw new MRTError(`${error}`, {kappa, sigma, theta, carry, x_T})
+				throw new MRTError('UNKNOWN_ERROR', `${error}`, {kappa, sigma, theta, carry, x_T}, 500)
 			})
 	}
 
@@ -109,7 +109,7 @@ class MRT {
 				return response;
 			})
 			.catch((error) =>  {
-				throw new MRTError(`${error}`, {proctype, kappa, sigma, theta, ts: ts.length, start_date, end_date})
+				throw new MRTError('UNKNOWN_ERROR', `${error}`, {proctype, kappa, sigma, theta, ts: ts.length, start_date, end_date}, 500)
 			})
 	}
 
@@ -139,7 +139,7 @@ class MRT {
 				return response;
 			})
 			.catch((error) =>  {
-				throw new MRTError(`${error}`, {proctype, ts1:ts1.length, ts2: ts2.length})
+				throw new MRTError('UNKNOWN_ERROR', `${error}`, {proctype, ts1:ts1.length, ts2: ts2.length}, 500)
 			})
 	}
 
@@ -169,7 +169,7 @@ class MRT {
 				return data
 			})
 			.catch((error) =>  {
-				throw new MRTError(`${error}`, {proctype, kappa, sigma, theta, x_0, x_0_date, nsteps, nwalks, seed })
+				throw new MRTError('UNKNOWN_ERROR', `${error}`, {proctype, kappa, sigma, theta, x_0, x_0_date, nsteps, nwalks, seed}, 500)
 			})
 	}
 
@@ -177,7 +177,7 @@ class MRT {
 		return await MRT._request({path: 'data/get_barrier_scenarios', data: JSON.stringify({kappa, sigma, theta, x_T, a_lvl, b_lvl})})
 			.then((response) => JSON.parse(response))
 			.catch((error) =>  {
-				throw new MRTError(`${error}`, {kappa, sigma, theta, x_T, a_lvl, b_lvl})
+				throw new MRTError('UNKNOWN_ERROR', `${error}`, {kappa, sigma, theta, x_T, a_lvl, b_lvl}, 500)
 			})
 	}
 }

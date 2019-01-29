@@ -5,15 +5,20 @@ const mongoose = require('mongoose');
 const config = require('./config/config')
 const cors = require('cors')
 const morgan = require('./config/morgan')
-const { MongoError } = require('mongodb');
+const { errorHandler, genericHandler} = require('./errors')
 
 const app = express()
 
-// Setup global middleware
+// Logging
 app.use(morgan())
+
+// Parsing
 app.use(bodyParser.json({limit: '50mb'}))
+
+// CORS
 app.use(cors())
 
+// DB Config
 // Latest version of mongoose driver 5.3.3 requires these flags for mongo > 3.1
 // we are using 3.6.1
 mongoose.connect(config.db.baseURL, {useNewUrlParser: true, useCreateIndex: true});
@@ -21,40 +26,18 @@ mongoose.Promise = global.Promise;
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, "MongoDB connection error"));
 
+// Security
 require('./passport')
+
+// Routes
 require('./routes')(app)
 
+// Port
 app.set('port', config.port);
 
-// Appplication Level error handling - should this be here??
-app.use((error, req, res, next) => {
-	console.log(error.stack)
-	if (error instanceof MongoError) {
-		if (error.code === 11000) {
-			const err = new Error('Must be unique')
-			err.statusCode = 400;
-			next(err);
-		} 
-		else {
-			const err = new Error('Database Error')
-			err.statusCode = 500;
-			next(err);
-		}
-	}
-	else {
-		next(error)
-	}
-});
-
-/**
- * Default error handler
- */
-app.use((error, req, res, next) => {
-  if (res.headersSent) {
-    return next(error)
-  }
-  res.status(error.statusCode || 500).send({msg: error.message})
-});
+// Error Handling
+app.use(errorHandler);
+app.use(genericHandler);
 
 // Start App
 app.listen(app.get('port'), () => {

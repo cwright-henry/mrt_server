@@ -86,7 +86,7 @@ class Investing {
 			return await Investing._parse(result)
 		}
 		catch(error) {
-			throw new InvestingError(`${error}`, {curr_id})
+			throw new InvestingError('UNKNOWN_ERROR', `${error}`, {curr_id}, 500)
 		}
 	}
 }

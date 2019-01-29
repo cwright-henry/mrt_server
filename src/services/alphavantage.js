@@ -4,6 +4,8 @@ const https = require('https');
 const moment = require('moment');
 const dateFormat='YYYY-MM-DD'
 
+const BACKUP_KEY = 'U92270YWCXVMV1AQ'
+
 class Alphavantage {
 	static _request(ticker) {
 		const opts = {
@@ -55,21 +57,28 @@ class Alphavantage {
 	}
 
 	static async get(ticker) {
-		const result = await Alphavantage._request(ticker)
-			.then((response) => JSON.parse(response))
-			.catch((error) => {
-				throw new AlphavantageError(`${err}`, {ticker})
-			})
-		if(result['Error Message']) {
-			const err = new Error(`Unable to locate ` + ticker)
-			err.statusCode = 400;
-			throw err;
-		}
+		let result;
 		try {
-			return await Alphavantage._parse(result)
+			result = await Alphavantage._request(ticker)
+			result = await JSON.parse(result)
+			if(result && result['Error Message']) {
+				if(result['Error Message'].indexOf('Invalid API call') !== -1) {
+					throw new AlphavantageError('UNKNOWN_TICKER', result['Error Message'], {ticker}, 400);
+				}
+				else {
+					throw new AlphavantageError('UNKNOWN_ERROR', result['Error Message'], {ticker}, 500);
+				}
+			}
+			else {
+				return await Alphavantage._parse(result)
+			}
 		}
 		catch(err) {
-			throw new AlphavantageError(`${err}`, {ticker})
+			if(!(err instanceof AlphavantageError)) {
+				throw new AlphavantageError('UNKNOWN_ERROR', `${err}`, {ticker}, 500)
+			}
+			else
+				throw err;
 		}
 	}
 }
