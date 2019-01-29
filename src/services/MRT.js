@@ -86,15 +86,9 @@ class MRT {
 			})
 	}
 
-	static async getFit({proctype='OU', kappa='nan', sigma='nan', theta='nan', start_date, end_date, ts} = {}) {
-		const data = {};
-		for(let i = 0; i < ts.length; i++) {
-			const date = ts[i][0]
-			const value = ts[i][1]
-			data[date] = value;
-		}
+	static async getFit({proctype='OU', kappa='nan', sigma='nan', theta='nan', nbeta='nan', start_date, end_date, ts} = {}) {
 
-		return await MRT._request({path: 'data/fit_all', data: JSON.stringify({proctype, kappa, sigma, theta, ts: data, start_date, end_date})})
+		return await MRT._request({path: 'data/fit_all', data: JSON.stringify({proctype, kappa, sigma, theta, nbeta, ts: arrayToObject(ts), start_date, end_date})})
 			.then((response) => JSON.parse(response))
 			.then((response) => {
 				if(response.resid) {
@@ -109,14 +103,14 @@ class MRT {
 				return response;
 			})
 			.catch((error) =>  {
-				throw new MRTError('UNKNOWN_ERROR', `${error}`, {proctype, kappa, sigma, theta, ts: ts.length, start_date, end_date}, 500)
+				throw new MRTError('UNKNOWN_ERROR', `${error}`, {proctype, kappa, sigma, theta, nbeta, ts: ts.length, start_date, end_date}, 500)
 			})
 	}
 
 
 	/**
 	 * Take 2 timeseries and fit them using LSpairfit or OU
-	 * Need to convert response to an array of arrays [[timestamp, value], [timestamp, value] ...] - highchats thing
+	 * Need to convert response to an array of arrays [[timestamp, value], [timestamp, value] ...] - highchatrs thing
 	 * 
 	 * @param {String} proctype Either OU or LSPairfit
 	 * @param {Array} ts1 Timeseries
@@ -151,8 +145,8 @@ class MRT {
 	 * Need to get mark to convert string timestamp to integer!!
 	 * Assign a unique Id after each call
 	 */
-	static async getScenarios({proctype = 'OU', kappa, sigma, theta, x_0, x_0_date, nsteps, nwalks=10, seed} = {}) {
-		return await MRT._request({path: 'data/get_scenarios', data: JSON.stringify({proctype, kappa, sigma, theta, x_0, x_0_date, nsteps, nwalks, seed})})
+	static async getScenarios({proctype = 'OU', kappa, sigma, nbeta, theta, x_0, x_0_date, nsteps, nwalks=10, seed} = {}) {
+		return await MRT._request({path: 'data/get_scenarios', data: JSON.stringify({proctype, kappa, sigma, theta, nbeta, x_0, x_0_date, nsteps, nwalks, seed})})
 			.then((response) => JSON.parse(response))
 			.then((response) => {
 				const data = [];
@@ -169,7 +163,7 @@ class MRT {
 				return data
 			})
 			.catch((error) =>  {
-				throw new MRTError('UNKNOWN_ERROR', `${error}`, {proctype, kappa, sigma, theta, x_0, x_0_date, nsteps, nwalks, seed}, 500)
+				throw new MRTError('UNKNOWN_ERROR', `${error}`, {proctype, kappa, sigma, theta, nbeta, x_0, x_0_date, nsteps, nwalks, seed}, 500)
 			})
 	}
 

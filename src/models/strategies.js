@@ -3,6 +3,7 @@ const mongoosePaginate = require('mongoose-paginate-v2');
 const fittingSchema = require('./Fitting')
 const NoFittingSchema = require('./NoFitting')
 const OUFittingSchema = require('./OUFitting')
+const HypOUFittingSchema = require('./HypOUFitting')
 const Schema = mongoose.Schema;
 
 /**
@@ -59,5 +60,6 @@ StrategySchema.index({ name: 1, user: 1 }, { unique: true })
 StrategySchema.plugin(mongoosePaginate)
 StrategySchema.path('fit').discriminator('NONE', NoFittingSchema)
 StrategySchema.path('fit').discriminator('OU', OUFittingSchema)
+StrategySchema.path('fit').discriminator('hypOU', HypOUFittingSchema)
 
 module.exports = mongoose.model('strategies', StrategySchema);

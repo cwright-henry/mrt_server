@@ -62,7 +62,7 @@ module.exports = {
 	 */
 	async getFit(req, res) {
 		const {user} = req;
-		let {strategyId, start_date, end_date, kappa, sigma, theta} = req.validated.query;
+		let {proctype, strategyId, start_date, end_date, kappa, sigma, theta, nbeta} = req.validated.query;
 
 		let query = {
 			user: user._id,
@@ -72,6 +72,7 @@ module.exports = {
 		let strategy = await Strategy.findOne(query).select('ts').lean().exec()
 		
 		const params = {
+			proctype,
 			ts: strategy.ts.data,
 			start_date,
 			end_date
@@ -86,16 +87,21 @@ module.exports = {
 		if(!Utils.isEmpty(theta)) {
 			params.theta = theta
 		}
+		if(!Utils.isEmpty(nbeta)) {
+			params.nbeta = nbeta
+		}
 
 		res.send(await MRT.getFit(params));
 	},
 		
 	async getScenarios(req, res) {
-		const {kappa, sigma, theta, x_0, x_0_date, nsteps, seed} = req.validated.query;
+		const {proctype, kappa, sigma, theta, nbeta, x_0, x_0_date, nsteps, seed} = req.validated.query;
 		const params = {
+			proctype,
 			kappa,
 			sigma,
 			theta,
+			nbeta,
 			x_0,
 			x_0_date,
 			nsteps,

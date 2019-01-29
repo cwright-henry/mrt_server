@@ -1,9 +1,11 @@
 const Joi = require('joi')
 
 const strategyId = Joi.string().alphanum();
+const proctype = Joi.string().valid(['OU', 'hypOU'])
 const kappa = Joi.number();
 const sigma = Joi.number();
 const theta = Joi.number();
+const nbeta = Joi.number();
 const x_0 = Joi.number();
 const x_0_date = Joi.number().positive();
 const nsteps =  Joi.number().positive();
@@ -20,9 +22,11 @@ const getFitLSESchema = {
 
 const getFitSchema = {
 	query: Joi.object().keys({
+		proctype: proctype.required(),
 		kappa: kappa.allow(null).optional(),
 		sigma: sigma.allow(null).optional(),
 		theta: theta.allow(null).optional(),
+		nbeta: nbeta.allow(null).optional(),
 		strategyId: strategyId.required(),
 		start_date: Joi.number().required(),
 		end_date: Joi.number().required()
@@ -31,9 +35,11 @@ const getFitSchema = {
 
 const getScenariosSchema = {
 	query: Joi.object().keys({
+		proctype: proctype.required(),
 		kappa: kappa.required(),
 		sigma: sigma.required(),
 		theta: theta.required(),
+		nbeta: nbeta.allow(null).optional(),
 		x_0: x_0.required(),
 		x_0_date: x_0_date.required(),
 		nsteps: nsteps.required(),
