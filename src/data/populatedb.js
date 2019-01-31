@@ -1,7 +1,7 @@
 #! /usr/bin/env node
 
 console.log('Populating collections...')
-
+require('dotenv').config()
 const fs = require('fs');
 const moment = require('moment');
 const Strategy = require('../models/strategies');
@@ -9,12 +9,10 @@ const User = require('../models/users');
 const UserHistory = require('../models/userhistory');
 const Dictionary = require('../models/Dictionary');
 const MRT = require('../services/MRT');
-const config = require('../config/config');
 
 // Setup DB connection
 const mongoose = require('mongoose');
-const mongoDB = config.db.baseURL;
-mongoose.connect(mongoDB, {useNewUrlParser: true, useCreateIndex: true});
+mongoose.connect(process.env.DB_URL, {useNewUrlParser: true, useCreateIndex: true});
 mongoose.Promise = global.Promise;
 const db = mongoose.connection;
 mongoose.connection.on('error', console.error.bind(console, 'MongoDB connection error:'));

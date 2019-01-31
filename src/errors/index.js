@@ -1,5 +1,7 @@
+const {Logger} = require('../utils/logging')
+
 const errorHandler = (error, req, res, next) => {
-	console.log(error)
+	Logger.error(error)
 	if (error.name === 'MongoError') {
 		if (error.code === 11000) {
 			const err = new Error("DUPLICATE_NAME")

@@ -27,7 +27,7 @@ class MRT {
 			headers: {
 				'Content-Type': 'application/json',
 				'Content-Length': data.length,
-				'api-key': 'CWH667'
+				'api-key': process.env.MRT_API_KEY
 			}
 		};
 

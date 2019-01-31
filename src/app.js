@@ -1,19 +1,18 @@
+require('dotenv').config()
 const express = require('express');
-const path = require('path')
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
-const config = require('./config/config')
 const cors = require('cors')
-const morgan = require('./config/morgan')
+const {LoggingMiddleware, Logger} = require('./utils/logging')
 const { errorHandler, genericHandler} = require('./errors')
 
 const app = express()
 
 // Logging
-app.use(morgan())
+app.use(LoggingMiddleware)
 
-// Parsing
-app.use(bodyParser.json({limit: '50mb'}))
+// JSON body parser
+app.use(bodyParser.json({limit: process.env.APP_MAX_UPLOAD}))
 
 // CORS
 app.use(cors())
@@ -21,7 +20,7 @@ app.use(cors())
 // DB Config
 // Latest version of mongoose driver 5.3.3 requires these flags for mongo > 3.1
 // we are using 3.6.1
-mongoose.connect(config.db.baseURL, {useNewUrlParser: true, useCreateIndex: true});
+mongoose.connect(process.env.DB_URL, {useNewUrlParser: true, useCreateIndex: true});
 mongoose.Promise = global.Promise;
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, "MongoDB connection error"));
@@ -33,7 +32,7 @@ require('./passport')
 require('./routes')(app)
 
 // Port
-app.set('port', config.port);
+app.set('port', process.env.APP_PORT);
 
 // Error Handling
 app.use(errorHandler);
@@ -41,5 +40,5 @@ app.use(genericHandler);
 
 // Start App
 app.listen(app.get('port'), () => {
-	console.log('Server started on ' + app.get('port'));
+	Logger.info(`Server started on ${app.get('port')}`);
 });

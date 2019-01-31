@@ -4,13 +4,11 @@ const https = require('https');
 const moment = require('moment');
 const dateFormat='YYYY-MM-DD'
 
-const BACKUP_KEY = 'U92270YWCXVMV1AQ'
-
 class Alphavantage {
 	static _request(ticker) {
 		const opts = {
 			host: 'www.alphavantage.co', 
-			path: `/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=${ticker}&outputsize=full&apikey=W161`,
+			path: `/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=${ticker}&outputsize=full&apikey=${process.env.ALPHAVANTAGE_API_KEY}`,
 			port: 443,
 			method: 'GET',
 			headers: {
