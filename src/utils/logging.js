@@ -53,7 +53,7 @@ const createTransports = function () {
     customTransports.push(
       new transports.File({
         filename: path.join(process.env.LOG_DIR, process.env.LOG_FILE),
-        level: process.env.LOG_LEVEL
+        level: process.env.LOG_LEVEL_FILE
       })
     );
   }
@@ -61,7 +61,7 @@ const createTransports = function () {
   if (process.env.LOG_ENABLE_CONSOLE) {
     customTransports.push(
       new transports.Console({
-        level: process.env.LOG_LEVEL
+        level: process.env.LOG_LEVEL_CONSOLE
       })
     );
   }
@@ -69,7 +69,7 @@ const createTransports = function () {
   if (process.env.LOG_ENABLE_ELASTICSEARCH) {
     customTransports.push(
       new Elasticsearch({
-        level: process.env.LOG_LEVEL
+        level: process.env.LOG_LEVEL_ELASTICSEARCH
       })
     );
   }
