@@ -13,7 +13,7 @@ module.exports = (app) => {
 	app.post('/api/login', AuthenticationController.login)
 
 	// MRT API
-	app.get('/api/data-all', isAuthenticated, asyncMiddleware(MRTController.getAll))
+	app.get('/api/data-all', [isAuthenticated, validate.getAllSchema], asyncMiddleware(MRTController.getAll))
 	app.get('/api/data-prob', isAuthenticated, asyncMiddleware(MRTController.getProb))
 	app.get('/api/data-epnl', isAuthenticated, asyncMiddleware(MRTController.getEpnl))
 	app.get('/api/data-et', isAuthenticated, asyncMiddleware(MRTController.getEt))

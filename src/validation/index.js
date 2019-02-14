@@ -20,6 +20,19 @@ const getFitLSESchema = {
 	})
 }
 
+const getAllSchema = {
+	query: Joi.object().keys({
+		proctype: proctype.required(),
+		kappa: kappa.required(),
+		sigma: sigma.required(),
+		theta: theta.required(),
+		nbeta: nbeta.allow(null).optional(),
+		carry: Joi.number().allow(null).optional(),
+		x_0: x_0.allow(null).optional(),
+		trans_oneway_stdev: Joi.number().allow(null).optional(),
+	})
+}
+
 const getFitSchema = {
 	query: Joi.object().keys({
 		proctype: proctype.required(),
@@ -81,5 +94,6 @@ const validateRequest = (requestSchema, req, res, next) => {
 module.exports = {
 	getScenarios: (req, res,next) => validateRequest(getScenariosSchema, req, res, next),
 	getFit: (req, res,next) => validateRequest(getFitSchema, req, res, next),
-	getFitLSE: (req, res,next) => validateRequest(getFitLSESchema, req, res, next)
+	getFitLSE: (req, res,next) => validateRequest(getFitLSESchema, req, res, next),
+	getAllSchema: (req, res,next) => validateRequest(getAllSchema, req, res, next)
 }

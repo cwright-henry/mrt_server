@@ -54,11 +54,11 @@ class MRT {
 		});
 	}
 
-	static async getAll({proctype = 'OU', kappa = 1.1, sigma = 2.1, theta = 0.1, carry = 0.1, x_T = 1.1, trans_oneway_stdev = 0.05} = {}) {
-		return await MRT._request({path: 'data/all2', data: JSON.stringify({proctype, kappa, sigma, theta, carry, x_T, trans_oneway_stdev})})
+	static async getAll({proctype, kappa, sigma, theta, nbeta='nan', carry = 0.1, x_0, trans_oneway_stdev = 0.05} = {}) {
+		return await MRT._request({path: 'data/all2', data: JSON.stringify({proctype, kappa, sigma, theta, nbeta, carry, x_0, trans_oneway_stdev})})
 			.then((response) => JSON.parse(response))
 			.catch((error) =>  {
-				throw new MRTError('UNKNOWN_ERROR', `${error}`, {proctype, kappa, sigma, theta, carry, x_T, trans_oneway_stdev}, 500)
+				throw new MRTError('UNKNOWN_ERROR', `${error}`, {proctype, kappa, sigma, theta, carry, x_0, trans_oneway_stdev}, 500)
 			})
 	}
 
@@ -86,7 +86,7 @@ class MRT {
 			})
 	}
 
-	static async getFit({proctype='OU', kappa='nan', sigma='nan', theta='nan', nbeta='nan', start_date, end_date, ts} = {}) {
+	static async getFit({proctype, kappa='nan', sigma='nan', theta='nan', nbeta='nan', start_date, end_date, ts} = {}) {
 
 		return await MRT._request({path: 'data/fit_all', data: JSON.stringify({proctype, kappa, sigma, theta, nbeta, ts: arrayToObject(ts), start_date, end_date})})
 			.then((response) => JSON.parse(response))
@@ -145,7 +145,7 @@ class MRT {
 	 * Need to get mark to convert string timestamp to integer!!
 	 * Assign a unique Id after each call
 	 */
-	static async getScenarios({proctype = 'OU', kappa, sigma, nbeta, theta, x_0, x_0_date, nsteps, nwalks=10, seed} = {}) {
+	static async getScenarios({proctype, kappa, sigma, nbeta, theta, x_0, x_0_date, nsteps, nwalks=10, seed} = {}) {
 		return await MRT._request({path: 'data/get_scenarios', data: JSON.stringify({proctype, kappa, sigma, theta, nbeta, x_0, x_0_date, nsteps, nwalks, seed})})
 			.then((response) => JSON.parse(response))
 			.then((response) => {

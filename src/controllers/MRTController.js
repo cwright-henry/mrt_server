@@ -7,14 +7,15 @@ const Utils = require('../utils/utils');
  */
 module.exports = {
 	async getAll(req, res) {
-		const {kappa, sigma, theta, carry, x_T, trans_oneway_stdev} = req.query;
+		const {proctype, kappa, sigma, theta, carry, x_0, trans_oneway_stdev} = req.validated.query;
 		const payload = {
-			kappa: parseFloat(kappa),
-			sigma: parseFloat(sigma),
-			theta: parseFloat(theta),
-			carry: parseFloat(carry),
-			x_T: parseFloat(x_T),
-			trans_oneway_stdev: parseFloat(trans_oneway_stdev)
+			proctype,
+			kappa,
+			sigma,
+			theta,
+			carry,
+			x_0,
+			trans_oneway_stdev
 		}
 		const result = await MRT.getAll(payload);
 		res.send(result);
