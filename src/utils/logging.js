@@ -45,7 +45,7 @@ function jsonFormat(tokens, req, res) {
 const createTransports = function () {
   const customTransports = [];
 
-  if (process.env.LOG_ENABLE_FILE) {
+  if (process.env.LOG_ENABLE_FILE === 'true') {
     if (!fs.existsSync(process.env.LOG_DIR)) {
       fs.mkdirSync(process.env.LOG_DIR);
     }
@@ -58,7 +58,7 @@ const createTransports = function () {
     );
   }
 
-  if (process.env.LOG_ENABLE_CONSOLE) {
+  if (process.env.LOG_ENABLE_CONSOLE === 'true') {
     customTransports.push(
       new transports.Console({
         level: process.env.LOG_LEVEL_CONSOLE
@@ -66,7 +66,8 @@ const createTransports = function () {
     );
   }
 
-  if (process.env.LOG_ENABLE_ELASTICSEARCH) {
+  if (process.env.LOG_ENABLE_ELASTICSEARCH === 'true') {
+    console.log('process.env.LOG_ENABLE_ELASTICSEARCH')
     customTransports.push(
       new Elasticsearch({
         level: process.env.LOG_LEVEL_ELASTICSEARCH
