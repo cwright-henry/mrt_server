@@ -20,9 +20,9 @@ const arrayToObject = (ts) => {
 class MRT {
 	static _request({path, data}) {
 		const opts = {
-			host: 'localhost', 
+			host: process.env.MRT_HOST, 
 			path,
-			port: 5000,
+			port: process.env.MRT_PORT,
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
