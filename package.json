@@ -5,6 +5,7 @@
   "license": "MIT",
   "scripts": {
     "start": "nodemon ./src/app.js",
+    "build": "node ./src/app.js",
     "populate": "node ./src/data/populatedb"
   },
   "dependencies": {
