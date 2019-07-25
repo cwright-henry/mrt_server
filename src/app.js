@@ -1,5 +1,6 @@
 require('dotenv').config()
 const express = require('express');
+const helmet = require('helmet')
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const cors = require('cors')
@@ -7,6 +8,11 @@ const { LoggingMiddleware, Logger } = require('./utils/logging')
 const { errorHandler, genericHandler } = require('./errors')
 
 const app = express()
+
+// HTTP Headers
+app.use(helmet())
+app.disable('x-powered-by');
+app.use(helmet.hidePoweredBy({ setTo: 'Bluecrowe Analytics' }));
 
 // Logging
 app.use(LoggingMiddleware)

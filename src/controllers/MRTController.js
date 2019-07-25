@@ -7,7 +7,7 @@ const Utils = require('../utils/utils');
  */
 module.exports = {
 	async getAll(req, res) {
-		const {proctype, kappa, sigma, theta, carry, x_0, trans_oneway_stdev} = req.validated.query;
+		const { proctype, kappa, sigma, theta, carry, x_0, trans_oneway_stdev } = req.validated.query;
 		const payload = {
 			proctype,
 			kappa,
@@ -20,17 +20,17 @@ module.exports = {
 		const result = await MRT.getAll(payload);
 		res.send(result);
 	},
-    
+
 	async getProb(req, res) {
 		const result = await MRT.getProb();
 		res.send(result);
 	},
-    
+
 	async getEpnl(req, res) {
 		const result = await MRT.getEpnl();
 		res.send(result);
 	},
-		
+
 	async getEt(req, res) {
 		const result = await MRT.getEt();
 		res.send(result);
@@ -43,7 +43,7 @@ module.exports = {
 	 * @param {*} res 
 	 */
 	async getFitLSE(req, res) {
-		let {ts1, ts2} = req.validated.body;
+		let { ts1, ts2 } = req.validated.body;
 
 		const params = {
 			ts1,
@@ -52,7 +52,7 @@ module.exports = {
 
 		res.send(await MRT.getFitLSE(params));
 	},
-		
+
 	/**
 	 * Fit a timeseries. The first time this is called a strategy has no
 	 * kappa, sigma or theta so these are optional. The ts is loaded from
@@ -62,8 +62,8 @@ module.exports = {
 	 * @param {*} res 
 	 */
 	async getFit(req, res) {
-		const {user} = req;
-		let {proctype, strategyId, start_date, end_date, kappa, sigma, theta, nbeta} = req.validated.query;
+		const { user } = req;
+		let { proctype, strategyId, start_date, end_date, kappa, sigma, theta, nbeta } = req.validated.query;
 
 		let query = {
 			user: user._id,
@@ -71,7 +71,7 @@ module.exports = {
 		};
 
 		let strategy = await Strategy.findOne(query).select('ts').lean().exec()
-		
+
 		const params = {
 			proctype,
 			ts: strategy.ts.data,
@@ -79,24 +79,24 @@ module.exports = {
 			end_date
 		}
 
-		if(!Utils.isEmpty(kappa)) {
+		if (!Utils.isEmpty(kappa)) {
 			params.kappa = kappa
 		}
-		if(!Utils.isEmpty(sigma)) {
+		if (!Utils.isEmpty(sigma)) {
 			params.sigma = sigma
 		}
-		if(!Utils.isEmpty(theta)) {
+		if (!Utils.isEmpty(theta)) {
 			params.theta = theta
 		}
-		if(!Utils.isEmpty(nbeta)) {
+		if (!Utils.isEmpty(nbeta)) {
 			params.nbeta = nbeta
 		}
 
 		res.send(await MRT.getFit(params));
 	},
-		
+
 	async getScenarios(req, res) {
-		const {proctype, kappa, sigma, theta, nbeta, x_0, x_0_date, nsteps, seed} = req.validated.query;
+		const { proctype, kappa, sigma, theta, nbeta, x_0, x_0_date, nsteps, seed } = req.validated.query;
 		const params = {
 			proctype,
 			kappa,
@@ -111,7 +111,7 @@ module.exports = {
 
 		res.send(await MRT.getScenarios(params));
 	},
-		
+
 	async getBarrierScenarios(req, res) {
 		const result = await MRT.getBarrierScenarios();
 		res.send(result);

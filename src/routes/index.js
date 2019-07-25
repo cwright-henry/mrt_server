@@ -30,6 +30,6 @@ module.exports = (app) => {
 	app.get('/api/userhistory', isAuthenticated, asyncMiddleware(ApiController.userHistory))
 	app.post('/api/upload', isAuthenticated, asyncMiddleware(ApiController.upload))
 	app.post('/api/remove', isAuthenticated, asyncMiddleware(ApiController.remove))
-	app.get('/api/find-dict', isAuthenticated, asyncMiddleware(ApiController.listDictionary))
-	app.get('/api/find-timeseries', isAuthenticated, asyncMiddleware(ApiController.findTimeseries))
+	app.get('/api/get-library', isAuthenticated, asyncMiddleware(ApiController.getLibrary))
+	app.get('/api/find-timeseries', [isAuthenticated, validate.getTimeseries], asyncMiddleware(ApiController.findTimeseries))
 }

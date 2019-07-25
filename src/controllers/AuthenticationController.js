@@ -1,15 +1,15 @@
 const User = require('../models/users')
 const jwt = require('jsonwebtoken')
 
-function jwtSignUser (user) {
+function jwtSignUser(user) {
   const ONE_WEEK = 60 * 60 * 24 * 7
   return jwt.sign(user, process.env.APP_SECRET, {
     expiresIn: ONE_WEEK
   })
 }
 
-module.exports = { 
-  async register (req, res) {
+module.exports = {
+  async register(req, res) {
     try {
       const newUser = new User({
         firstName: req.body.firstname,
@@ -23,7 +23,7 @@ module.exports = {
         user: userJson,
         token: jwtSignUser(userJson)
       })
-    } 
+    }
     catch (err) {
       console.log(err)
       res.status(400).send({
@@ -32,9 +32,9 @@ module.exports = {
     }
   },
 
-  async login (req, res) {
+  async login(req, res) {
     try {
-      const {email, password} = req.body
+      const { email, password } = req.body
       const user = await User.findByEmail(email)
 
       if (!user) {
@@ -55,7 +55,7 @@ module.exports = {
         user: userJson,
         token: jwtSignUser(userJson)
       })
-    } 
+    }
     catch (err) {
       console.log(err)
       res.status(500).send({

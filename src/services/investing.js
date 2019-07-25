@@ -8,7 +8,7 @@ const DATE_FORMAT = "DD/MM/YYYY"
 const NUM_MONTHS = -120
 
 class Investing {
-	static _request({curr_id, st_date, end_date}) {
+	static _request({ curr_id, st_date, end_date }) {
 
 		const data = querystring.stringify({
 			action: 'historical_data',
@@ -41,8 +41,8 @@ class Investing {
 				});
 
 				result.on("end", () => {
-					if(result.statusCode == 200) 
-						return resolve(Buffer.concat(buffers)) 
+					if (result.statusCode == 200)
+						return resolve(Buffer.concat(buffers))
 					return reject(Buffer.concat(buffers));
 				});
 			});
@@ -56,18 +56,18 @@ class Investing {
 
 	static _parse(body) {
 		const $ = cheerio.load(body);
-		const data = []; 
+		const data = [];
 
-		$('tbody tr').each(function() {
+		$('tbody tr').each(function () {
 			let date = $('td:nth-child(1)', this).attr('data-real-value')
 			let value = $('td:nth-child(2)', this).attr('data-real-value')
-			if(date && value !== 'undefined') {
+			if (date && value !== 'undefined') {
 				data.push([parseInt(date) * 1000, parseFloat(value.replace(',', ''))])
 			}
 		});
 
 		data.sort((a, b) => {
-			if(!!a[0] && !!b[0]) {
+			if (!!a[0] && !!b[0]) {
 				if (a[0] < b[0]) return -1;
 				if (a[0] > b[0]) return 1;
 			}
@@ -82,11 +82,11 @@ class Investing {
 			const end_date = moment().format(DATE_FORMAT)
 			const st_date = moment().add(NUM_MONTHS, 'months').format(DATE_FORMAT)
 
-			const result = await Investing._request({curr_id, st_date, end_date});
+			const result = await Investing._request({ curr_id, st_date, end_date });
 			return await Investing._parse(result)
 		}
-		catch(error) {
-			throw new InvestingError('UNKNOWN_ERROR', `${error}`, {curr_id}, 500)
+		catch (error) {
+			throw new InvestingError('UNKNOWN_ERROR', `${error}`, { curr_id }, 500)
 		}
 	}
 }

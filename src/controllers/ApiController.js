@@ -5,7 +5,7 @@ const Dictionary = require('../models/Dictionary');
 const Investing = require('../services/investing');
 const Alphavantage = require('../services/alphavantage');
 
-module.exports = { 
+module.exports = {
 	/**
 	 * Retreve the full strategy and populate the ts reference
 	 * 
@@ -13,17 +13,17 @@ module.exports = {
 	 * @param {Response} res 
 	 */
 	async findStrategy(req, res) {
-		const {user} = req;
-		const {strategyId} = req.query;
+		const { user } = req;
+		const { strategyId } = req.query;
 
 		const query = {
-			_id: strategyId, 
+			_id: strategyId,
 			user: user._id
 		};
 
 		res.send(await Strategy.findOne(query).lean().exec());
 	},
-	
+
 	/**
 	 * Create a strategy from the upload time series
 	 * TODO error handling...
@@ -36,8 +36,8 @@ module.exports = {
 	 * @param {Response} res Set the strategy on the response
 	 */
 	async upload(req, res) {
-		const {user} = req;
-		const {name, data, source} = req.body;
+		const { user } = req;
+		const { name, data, source } = req.body;
 
 		const userHistory = new UserHistory({
 			action: 'ADD_LIBRARY',
@@ -62,23 +62,23 @@ module.exports = {
 		res.send(await strategy.save());
 	},
 
-	async searchStrategies (req, res) {
-		const {user} = req;
-		const {nameFilter} = req.query
-    const query = {
+	async searchStrategies(req, res) {
+		const { user } = req;
+		const { nameFilter } = req.query
+		const query = {
 			user: user._id,
 			name: new RegExp(nameFilter, "i")
-    }
-    const options = {
+		}
+		const options = {
 			page: 1,
 			limit: 50000,
-			sort: { 
-				name: 1 
+			sort: {
+				name: 1
 			},
 			select: '-fit -ts',
 			lean: true
-    }
-		
+		}
+
 		res.send(await Strategy.paginate(query, options));
 	},
 
@@ -90,48 +90,48 @@ module.exports = {
 	 * PageSize: Number of items to retrieve
 	 * strategyIds: Optional list strategy's to only consider
 	 */
-  async listStrategies (req, res) {
-		const {user} = req;
-		const {page, pageSize, overrides} = req.query
-    const query = {
+	async listStrategies(req, res) {
+		const { user } = req;
+		const { page, pageSize, overrides } = req.query
+		const query = {
 			user: user._id
 		}
 		const strategyOverrides = JSON.parse(overrides) // Need JOI to do this for us
-		if(strategyOverrides.length > 0) {
-			query._id = { $in: strategyOverrides}
+		if (strategyOverrides.length > 0) {
+			query._id = { $in: strategyOverrides }
 		}
-    const options = {
+		const options = {
 			page: page,
 			limit: parseInt(pageSize),
-			sort: { 
-				lastUpdate: -1 
+			sort: {
+				lastUpdate: -1
 			},
 			select: '-fit -ts',
 			lean: true
-    }
-		
+		}
+
 		res.send(await Strategy.paginate(query, options));
 	},
 
-	async userHistory (req, res) {
-		const {user} = req;
-		const {page, pageSize} = req.query
+	async userHistory(req, res) {
+		const { user } = req;
+		const { page, pageSize } = req.query
 
 		const query = {
 			user: user._id
-    }
+		}
 
-    const options = {
+		const options = {
 			page: page,
 			limit: parseInt(pageSize),
-			sort: { 
-				created: -1 
+			sort: {
+				created: -1
 			}
-    }
-		
+		}
+
 		res.send(await UserHistory.page(query, options));
 	},
-	
+
 	/**
 	 * Remove a strategy and underlying timeseries.
 	 * Becarefull of the double click so make sure the strategy exists before
@@ -140,17 +140,17 @@ module.exports = {
 	 * @param {Request} req 
 	 * @param {Response} res 
 	 */
-	async remove (req, res) {
-		const {user} = req;
-		const {id} = req.body
+	async remove(req, res) {
+		const { user } = req;
+		const { id } = req.body
 
 		const query = {
-			_id: id, 
+			_id: id,
 			user: user._id
 		};
-		
-		const strategy =  await Strategy.findOneAndDelete(query).exec();
-		if(strategy) {
+
+		const strategy = await Strategy.findOneAndDelete(query).exec();
+		if (strategy) {
 			const userHistory = new UserHistory({
 				action: 'REMOVE_LIBRARY',
 				user
@@ -159,13 +159,13 @@ module.exports = {
 		}
 		res.send(strategy);
 	},
-	
-	async saveOUFit (req, res) {
-		const {user} = req;
-		const {id, fit, name} = req.body;
+
+	async saveOUFit(req, res) {
+		const { user } = req;
+		const { id, fit, name } = req.body;
 
 		const query = {
-			_id: id, 
+			_id: id,
 			user: user._id
 		}
 
@@ -174,32 +174,23 @@ module.exports = {
 			fit: fit,
 			name,
 		}
-		res.send(await Strategy.findOneAndUpdate(query, update, {new: true}).exec());
+		res.send(await Strategy.findOneAndUpdate(query, update, { new: true }).exec());
 	},
 
 	/**
-	 * Retrieve a dictionary either from the existing library or
-	 * preconfigured library
+	 * Retrieve a listing of the users library
 	 * 
 	 * @param {*} req 
 	 * @param {*} res 
 	 */
-	async listDictionary (req, res) {
-		const {user} = req;
-		const {type} = req.query
+	async getLibrary(req, res) {
+		const { user } = req;
 
-		if(type === 'library') {
-			let query = {
-				user: user._id
-			};
-			res.send(await Strategy.find(query).select('_id name').sort({name: 'asc'}).lean().exec());
-		}
-		else {
-			let query = {
-				type
-			};
-			res.send(await Dictionary.find(query).sort({name: 'asc'}).lean().exec());
-		}
+		let query = {
+			user: user._id
+		};
+
+		res.send(await Strategy.find(query).select('_id name lastUpdate').sort({ lastUpdate: 'desc' }).lean().exec());
 	},
 
 	/**
@@ -207,65 +198,91 @@ module.exports = {
 	 * 
 	 * Sources:
 	 * 1. Library - extract series from strategy
-	 * 2. Investing.com - index, commodities, currency, crypto's
-	 * 3. Alphavantage - equities
+	 * 2. Investing.com - 'Index', 'Cmdty', 'Curncy', 'Crypto'
+	 * 3. Alphavantage - 'Equity'
 	 * 
 	 * (2, 3) are cached timeseries, so check cache first
 	 * 
-	 * TODO exception handling
-	 * 
 	 */
-	async findTimeseries (req, res) {
-		const {user} = req;
-		const {type, source} = req.query;
+	async findTimeseries(req, res) {
+		const { user } = req;
+		let { ticker, assetClass } = req.query;
 
-		if(source === 'Library') {
-			let query = {
+		if (assetClass === 'Library') {
+			const query = {
 				user: user._id,
-				_id: type
+				_id: ticker
 			};
 
-			let select = {
+			const select = {
 				fit: 0,
 				_id: 0,
 				user: 0
 			}
-			res.send(await Strategy.findOne(query).select(select).exec());
+			return res.send(await Strategy.findOne(query).select(select).exec());
 		}
-		else {
-			// Look up cache first
-			let query = {
-				name: type
+
+		// Convert ticker to uppercase - seems to be what bloomberg and
+		// other providers do
+		ticker = ticker.toUpperCase();
+
+		if (assetClass === 'Equity') {
+			const query = {
+				name: ticker,
+				source: assetClass
 			};
+
+			// Check the cache
 			let series = await Timeseries.findOne(query).lean().exec()
-			if(series) {
-				res.send(series)
+
+			if (series) {
+				return res.send(series)
 			}
-			// Not in cache, so look it up
 			else {
-				if(source === 'Investing.com') {
-					let results =  await Investing.get(type);
-					let series = new Timeseries({
-						name: type,
-						source,
+				const results = await Alphavantage.get(ticker);
+				if (results.length > 0) {
+					series = new Timeseries({
+						name: ticker,
+						source: assetClass,
 						data: results
 					})
 					series.save();
-					res.send(series)
-				}
-				else {
-					let results =  await Alphavantage.get(type);
-					if(results.length > 0) {
-						let series = new Timeseries({
-							name: type,
-							source,
-							data: results
-						})
-						series.save();
-						res.send(series)
-					}
+					return res.send(series)
 				}
 			}
 		}
+
+		if (assetClass === 'Index' || assetClass === 'Cmdty' || assetClass === 'Curncy' || assetClass === 'Crypto') {
+			const query = {
+				name: ticker,
+				type: assetClass
+			};
+			const dictionaryEntry = await Dictionary.findOne(query).lean().exec()
+
+			if (dictionaryEntry) {
+				const query = {
+					name: ticker,
+					source: assetClass,
+				};
+
+				// Check the cache
+				let series = await Timeseries.findOne(query).lean().exec()
+				if (series) {
+					return res.send(series)
+				}
+				else {
+					const results = await Investing.get(dictionaryEntry.curr_id);
+					series = new Timeseries({
+						name: ticker,
+						source: assetClass,
+						data: results
+					})
+					series.save();
+					return res.send(series)
+				}
+			}
+		}
+
+		return res.status(404).send({ code: 'UNKNOWN_TICKER' })
 	}
 }

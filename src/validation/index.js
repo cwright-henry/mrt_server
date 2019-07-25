@@ -8,10 +8,12 @@ const theta = Joi.number();
 const nbeta = Joi.number();
 const x_0 = Joi.number();
 const x_0_date = Joi.number().positive();
-const nsteps =  Joi.number().positive();
-const seed =  Joi.number().positive();
+const nsteps = Joi.number().positive();
+const seed = Joi.number().positive();
 const point = Joi.array().items(Joi.number().required(), Joi.number().required()).single();
 const timeseries = Joi.array().items(point)
+const assetClass = Joi.string().valid(['Library', 'Equity', 'Index', 'Cmdty', 'Curncy', 'Crypto'])
+const ticker = Joi.string().alphanum();
 
 const getFitLSESchema = {
 	body: Joi.object().keys({
@@ -60,6 +62,13 @@ const getScenariosSchema = {
 	})
 }
 
+const getTimeseries = {
+	query: Joi.object().keys({
+		assetClass: assetClass.required(),
+		ticker: ticker.required(),
+	})
+}
+
 /**
  * Generic request validation. Converted parameters are aaded to the request object
  * as validated.
@@ -74,12 +83,12 @@ const validateRequest = (requestSchema, req, res, next) => {
 		.map(key => {
 			const schema = requestSchema[key];
 			const value = req[key];
-			const validate = () => schema ? schema.validate(value, {abortEarly: false}) : Promise.resolve({});
-			return validate().then(result => ({[key]: result}));
+			const validate = () => schema ? schema.validate(value, { abortEarly: false }) : Promise.resolve({});
+			return validate().then(result => ({ [key]: result }));
 		});
 	return Promise.all(validations)
 		.then(result => {
-			req.validated = Object.assign({},...result);
+			req.validated = Object.assign({}, ...result);
 			next();
 		})
 		.catch(validationError => {
@@ -92,8 +101,9 @@ const validateRequest = (requestSchema, req, res, next) => {
 };
 
 module.exports = {
-	getScenarios: (req, res,next) => validateRequest(getScenariosSchema, req, res, next),
-	getFit: (req, res,next) => validateRequest(getFitSchema, req, res, next),
-	getFitLSE: (req, res,next) => validateRequest(getFitLSESchema, req, res, next),
-	getAllSchema: (req, res,next) => validateRequest(getAllSchema, req, res, next)
+	getScenarios: (req, res, next) => validateRequest(getScenariosSchema, req, res, next),
+	getFit: (req, res, next) => validateRequest(getFitSchema, req, res, next),
+	getFitLSE: (req, res, next) => validateRequest(getFitLSESchema, req, res, next),
+	getAllSchema: (req, res, next) => validateRequest(getAllSchema, req, res, next),
+	getTimeseries: (req, res, next) => validateRequest(getTimeseries, req, res, next)
 }

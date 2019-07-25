@@ -22,10 +22,10 @@ const TimeSeriesSchema = new Schema({
 		trim: true
 	},
 	data: [],
-	createdAt: { 
-		type: Date, 
-		expires: '30d', 
-		default: Date.now 
+	createdAt: {
+		type: Date,
+		expires: '4h',
+		default: Date.now
 	}
 });
 
