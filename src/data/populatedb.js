@@ -212,8 +212,8 @@ async function init() {
 	try {
 		mongoose.connection.dropDatabase();
 		saveIvestingTickers();
-		const userMark = await createUser('Mark', 'Scrowston', 'Bluecrowe Analytics', 'mark@mrt.io', '12345678');
-		const userColin = await createUser('Colin', 'Wright', 'Bluecrowe Analytics', 'colin@mrt.io', '12345678');
+		const userMark = await createUser('Mark', 'Scrowston', 'Bluecrowe Analytics', 'mark.scrowston@bluecrowe.io', '12345678');
+		const userColin = await createUser('Colin', 'Wright', 'Bluecrowe Analytics', 'colin.wright@bluecrowe.io', '12345678');
 		const series = await parseFiles();
 
 		await saveStrategies(series, userMark);
