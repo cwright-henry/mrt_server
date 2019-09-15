@@ -11,7 +11,7 @@ const app = express()
 
 // HTTP Headers
 app.use(helmet())
-app.disable('x-powered-by');
+app.disable('X-Powered-By');
 app.use(helmet.hidePoweredBy({ setTo: 'Bluecrowe Analytics' }));
 
 // Logging
@@ -19,9 +19,6 @@ app.use(LoggingMiddleware)
 
 // JSON body parser
 app.use(bodyParser.json({ limit: process.env.APP_MAX_UPLOAD }))
-
-// CORS
-app.use(cors())
 
 // DB Config
 // Latest version of mongoose driver 5.3.3 requires these flags for mongo > 3.1

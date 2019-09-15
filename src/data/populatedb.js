@@ -101,10 +101,11 @@ function createDictionary({ name, curr_id, type, source }) {
 	return Dictionary.create(dictionary);
 }
 
-function createUser(firstName, lastName, email, password) {
+function createUser(firstName, lastName, companyName, email, password) {
 	const newUser = new User({
 		firstName,
 		lastName,
+		companyName,
 		email,
 		password
 	})
@@ -211,8 +212,8 @@ async function init() {
 	try {
 		mongoose.connection.dropDatabase();
 		saveIvestingTickers();
-		const userMark = await createUser('Mark', 'Scrowston', 'mark@mrt.io', '12345678');
-		const userColin = await createUser('Colin', 'Wright', 'colin@mrt.io', '12345678');
+		const userMark = await createUser('Mark', 'Scrowston', 'Bluecrowe Analytics', 'mark@mrt.io', '12345678');
+		const userColin = await createUser('Colin', 'Wright', 'Bluecrowe Analytics', 'colin@mrt.io', '12345678');
 		const series = await parseFiles();
 
 		await saveStrategies(series, userMark);
