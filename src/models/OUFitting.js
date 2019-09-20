@@ -5,6 +5,10 @@ const OUFittingSchema = new mongoose.Schema({
 		type: Number,
 		default: 0.0
 	},
+	userKappa: {
+		type: Number,
+		default: null
+	},
 	kappa_full: {
 		type: Number,
 		default: 0.0
@@ -12,6 +16,10 @@ const OUFittingSchema = new mongoose.Schema({
 	sigma: {
 		type: Number,
 		default: 0.0
+	},
+	userSigma: {
+		type: Number,
+		default: null
 	},
 	sigma_full: {
 		type: Number,
@@ -21,74 +29,78 @@ const OUFittingSchema = new mongoose.Schema({
 		type: Number,
 		default: 0.0
 	},
+	userTheta: {
+		type: Number,
+		default: null
+	},
 	theta_full: {
 		type: Number,
 		default: 0.0
 	},
 	adf_stat: {
 		type: Number,
-		default: 0.0 
+		default: 0.0
 	},
 	adf_stat_full: {
 		type: Number,
-		default: 0.0 
+		default: 0.0
 	},
 	p_val: {
 		type: Number,
-		default: 0.0 
+		default: 0.0
 	},
 	p_val_full: {
 		type: Number,
-		default: 0.0 
+		default: 0.0
 	},
 	sig_lev: {
 		type: String,
-		default: '' 
+		default: ''
 	},
 	sig_lev_full: {
 		type: String,
-		default: '' 
+		default: ''
 	},
 	resid: [],
 	R2: {
 		type: Number,
-		default: 0.0 
+		default: 0.0
 	},
 	R2_full: {
 		type: Number,
-		default: 0.0 
-	}, 
+		default: 0.0
+	},
 	resid_mean: {
 		type: Number,
-		default: 0.0 
+		default: 0.0
 	},
 	resid_mean_full: {
 		type: Number,
-		default: 0.0 
+		default: 0.0
 	},
 	resid_std: {
 		type: Number,
-		default: 0.0 
+		default: 0.0
 	},
 	resid_std_full: {
 		type: Number,
-		default: 0.0 
+		default: 0.0
 	},
 	resid_skew: {
 		type: Number,
-		default: 0.0 
+		default: 0.0
 	},
 	resid_skew_full: {
 		type: Number,
-		default: 0.0 
+		default: 0.0
 	},
 	resid_kurt: {
 		type: Number,
-		default: 0.0 
+		default: 0.0
 	},
 	resid_kurt_full: {
 		type: Number,
-		default: 0.0 
+		default: 0.0
 	},
 	start_date: {
 		type: Number,
@@ -99,7 +111,7 @@ const OUFittingSchema = new mongoose.Schema({
 		default: new Date().getTime()
 	}
 }, {
-	_id: false 
+	_id: false
 });
 
 module.exports = OUFittingSchema;
