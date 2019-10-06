@@ -1,5 +1,8 @@
 const passport = require('passport')
 
+/**
+ * Only verifies that the token is valid - came from here
+ */
 module.exports = function (req, res, next) {
   passport.authenticate('jwt', function (err, user) {
     if (err || !user) {

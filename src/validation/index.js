@@ -14,11 +14,38 @@ const point = Joi.array().items(Joi.number().required(), Joi.number().required()
 const timeseries = Joi.array().items(point)
 const assetClass = Joi.string().valid(['Library', 'Equity', 'Index', 'Cmdty', 'Curncy', 'Crypto'])
 const ticker = Joi.string().alphanum();
+const password = Joi.string().regex(new RegExp('^[a-zA-Z0-9]{8,32}$'));
+const firstname = Joi.string();
+const lastname = Joi.string();
+const email = Joi.string().email();
+
+const upatePasswordSchema = {
+	body: Joi.object().keys({
+		oldPassword: password.required(),
+		newPassword: password.required()
+	})
+}
 
 const getFitLSESchema = {
 	body: Joi.object().keys({
 		ts1: timeseries.required(),
 		ts2: timeseries.required()
+	})
+}
+
+const loginSchema = {
+	body: Joi.object().keys({
+		email: email.required(),
+		password: password.required()
+	})
+}
+
+const registerSchema = {
+	body: Joi.object().keys({
+		firstname: firstname.required(),
+		lastname: lastname.required(),
+		email: email.required(),
+		password: password.required()
 	})
 }
 
@@ -105,5 +132,8 @@ module.exports = {
 	getFit: (req, res, next) => validateRequest(getFitSchema, req, res, next),
 	getFitLSE: (req, res, next) => validateRequest(getFitLSESchema, req, res, next),
 	getAllSchema: (req, res, next) => validateRequest(getAllSchema, req, res, next),
-	getTimeseries: (req, res, next) => validateRequest(getTimeseries, req, res, next)
+	getTimeseries: (req, res, next) => validateRequest(getTimeseries, req, res, next),
+	upatePassword: (req, res, next) => validateRequest(upatePasswordSchema, req, res, next),
+	login: (req, res, next) => validateRequest(loginSchema, req, res, next),
+	register: (req, res, next) => validateRequest(registerSchema, req, res, next)
 }

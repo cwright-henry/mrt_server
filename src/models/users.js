@@ -62,6 +62,17 @@ module.exports.create = function (newUser) {
 	});
 }
 
+module.exports.createHash = function (password) {
+	return new Promise((resolve, reject) => {
+		bcrypt.genSalt(10, function (err, salt) {
+			bcrypt.hash(password, salt, function (err, hash) {
+				if (err) reject(err);
+				resolve(hash);
+			});
+		});
+	});
+}
+
 module.exports.getUseById = function (id, cb) {
 	return User.findById(id, cb);
 }

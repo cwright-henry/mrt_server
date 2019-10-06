@@ -1,7 +1,6 @@
 #! /usr/bin/env node
 
 console.log('Populating collections...')
-require('dotenv').config()
 const fs = require('fs');
 const moment = require('moment');
 const Strategy = require('../models/strategies');
@@ -9,27 +8,22 @@ const User = require('../models/users');
 const UserHistory = require('../models/userhistory');
 const Dictionary = require('../models/Dictionary');
 const MRT = require('../services/MRT');
+const Executor = require('./execute')
 
-// Setup DB connection
-const mongoose = require('mongoose');
-mongoose.connect(process.env.DB_URL, { useNewUrlParser: true, useCreateIndex: true });
-mongoose.Promise = global.Promise;
-const db = mongoose.connection;
-mongoose.connection.on('error', console.error.bind(console, 'MongoDB connection error:'));
-mongoose.connection.on('connected', init);
+Executor.execute(init)
 
 const DATE_FORMAT = 'DD/MM/YYYY';
 
 const fileImports = [
-	{ path: __dirname + '/mm1.json', dateFomat: DATE_FORMAT, value: 'MR series 1' },
-	{ path: __dirname + '/audcad.json', dateFomat: DATE_FORMAT, value: 'AUDCAD' },
-	{ path: __dirname + '/eufly.json', dateFomat: DATE_FORMAT, value: 'EUFLY_RV' },
-	{ path: __dirname + '/ewavsewc.json', dateFomat: DATE_FORMAT, value: 'EWAvsEWC' },
-	{ path: __dirname + '/gefly.json', dateFomat: DATE_FORMAT, value: 'GE210530' },
-	{ path: __dirname + '/mm3.json', dateFomat: DATE_FORMAT, value: 'MR series 3' }
+	{ path: __dirname + '/../data/mm1.json', dateFomat: DATE_FORMAT, value: 'MR series 1' },
+	{ path: __dirname + '/../data/audcad.json', dateFomat: DATE_FORMAT, value: 'AUDCAD' },
+	{ path: __dirname + '/../data/eufly.json', dateFomat: DATE_FORMAT, value: 'EUFLY_RV' },
+	{ path: __dirname + '/../data/ewavsewc.json', dateFomat: DATE_FORMAT, value: 'EWAvsEWC' },
+	{ path: __dirname + '/../data/gefly.json', dateFomat: DATE_FORMAT, value: 'GE210530' },
+	{ path: __dirname + '/../data/mm3.json', dateFomat: DATE_FORMAT, value: 'MR series 3' }
 ];
 
-const InvestImports = __dirname + '/investingtickerdict.csv';
+const InvestImports = __dirname + '/../data/investingtickerdict.csv';
 
 function parseFile(path, dateFormat, value) {
 	return new Promise(function (resolve, reject) {
@@ -206,7 +200,7 @@ async function saveIvestingTickers() {
 	}
 }
 
-async function init() {
+async function init(mongoose) {
 	console.log(`Connected to Mongo ...`);
 	const time = process.hrtime();
 	try {
