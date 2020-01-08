@@ -1,98 +1,176 @@
 const Joi = require('joi')
 
-const strategyId = Joi.string().alphanum();
-const proctype = Joi.string().valid(['OU', 'hypOU'])
-const kappa = Joi.number();
-const sigma = Joi.number();
-const theta = Joi.number();
-const nbeta = Joi.number();
-const x_0 = Joi.number();
-const x_0_date = Joi.number().positive();
-const nsteps = Joi.number().positive();
-const seed = Joi.number().positive();
-const point = Joi.array().items(Joi.number().required(), Joi.number().required()).single();
-const timeseries = Joi.array().items(point)
-const assetClass = Joi.string().valid(['Library', 'Equity', 'Index', 'Cmdty', 'Curncy', 'Crypto'])
-const ticker = Joi.string().alphanum();
-const password = Joi.string().regex(new RegExp('^[a-zA-Z0-9]{8,32}$'));
-const firstname = Joi.string();
-const lastname = Joi.string();
-const email = Joi.string().email();
+// Boolean
+
+const BOOLEAN = Joi.boolean();
+
+// Strings
+const STRING = Joi.string();
+const EMAIL = Joi.string().email();
+const ASSETCLASS = Joi.string().valid(['Library', 'Equity', 'Index', 'Cmdty', 'Curncy', 'Crypto'])
+const PASSWORD = Joi.string().regex(new RegExp('^[a-zA-Z0-9]{8,32}$'));
+const PROC_TYPE = Joi.string().valid(['OU', 'hypOU']);
+const ALPHA_NUM = Joi.string().alphanum();
+
+// Numbers
+const NUM = Joi.number();
+const NUM_POS = Joi.number().positive();
+const NUM_INT = Joi.number().positive();
+
+// Arrays
+const POINT = Joi.array().items(Joi.number().required(), Joi.number().required()).single();
+const TIMESERIES = Joi.array().items(POINT);
+
+const textTickerSchema = {
+	query: Joi.object().keys({
+		curr_id: NUM_POS.required()
+	})
+}
+
+const createTickerSchema = {
+	body: Joi.object().keys({
+		name: ALPHA_NUM.required(),
+		curr_id: NUM_POS.required(),
+		type: ASSETCLASS.required()
+	})
+}
+
+const updateUserSchema = {
+	body: Joi.object().keys({
+		userId: ALPHA_NUM.required(),
+		status: BOOLEAN.required(),
+		firstName: STRING.max(128).required(),
+		lastName: STRING.max(128).required(),
+		companyName: STRING.max(128).required(),
+		email: EMAIL.max(256).required()
+	})
+}
+
+const newUserSchema = {
+	body: Joi.object().keys({
+		firstName: STRING.max(128).required(),
+		lastName: STRING.max(128).required(),
+		companyName: STRING.max(128).required(),
+		email: EMAIL.max(256).required(),
+		password: PASSWORD.max(32).required()
+	})
+}
+
+const searchUsersSchema = {
+	query: Joi.object().keys({
+		offset: NUM_INT.required(),
+		limit: NUM_POS.required(),
+		search: ALPHA_NUM.allow(null).optional()
+	})
+}
+
+const userHistorySchema = {
+	query: Joi.object().keys({
+		offset: NUM_INT.required(),
+		limit: NUM_POS.required(),
+		userId: ALPHA_NUM.allow(null).optional()
+	})
+}
+
+const userFindSchema = {
+	query: Joi.object().keys({
+		userId: ALPHA_NUM.required()
+	})
+}
+
+const userRemoveSchema = {
+	body: Joi.object().keys({
+		userId: ALPHA_NUM.required()
+	})
+}
+
+const tickerRemoveSchema = {
+	body: Joi.object().keys({
+		tickerId: ALPHA_NUM.required()
+	})
+}
+
+const setPasswordSchema = {
+	body: Joi.object().keys({
+		userId: ALPHA_NUM.required(),
+		newPassword: PASSWORD.max(32).required()
+	})
+}
 
 const upatePasswordSchema = {
 	body: Joi.object().keys({
-		oldPassword: password.required(),
-		newPassword: password.required()
+		oldPassword: PASSWORD.max(32).required(),
+		newPassword: PASSWORD.max(32).required()
 	})
 }
 
 const getFitLSESchema = {
 	body: Joi.object().keys({
-		ts1: timeseries.required(),
-		ts2: timeseries.required()
+		ts1: TIMESERIES.required(),
+		ts2: TIMESERIES.required()
 	})
 }
 
 const loginSchema = {
 	body: Joi.object().keys({
-		email: email.required(),
-		password: password.required()
+		email: EMAIL.max(256).required(),
+		password: PASSWORD.max(32).required()
 	})
 }
 
 const registerSchema = {
 	body: Joi.object().keys({
-		firstname: firstname.required(),
-		lastname: lastname.required(),
-		email: email.required(),
-		password: password.required()
+		firstname: STRING.max(128).required(),
+		lastname: STRING.max(128).required(),
+		email: EMAIL.max(256).required(),
+		password: PASSWORD.max(32).required()
 	})
 }
 
 const getAllSchema = {
 	query: Joi.object().keys({
-		proctype: proctype.required(),
-		kappa: kappa.required(),
-		sigma: sigma.required(),
-		theta: theta.required(),
-		nbeta: nbeta.allow(null).optional(),
-		carry: Joi.number().allow(null).optional(),
-		x_0: x_0.allow(null).optional(),
-		trans_oneway_stdev: Joi.number().allow(null).optional(),
+		proctype: PROC_TYPE.required(),
+		kappa: NUM.required(),
+		sigma: NUM.required(),
+		theta: NUM.required(),
+		nbeta: NUM.allow(null).optional(),
+		carry: NUM.allow(null).optional(),
+		x_0: NUM.allow(null).optional(),
+		trans_oneway_stdev: NUM.allow(null).optional(),
 	})
 }
 
 const getFitSchema = {
 	query: Joi.object().keys({
-		proctype: proctype.required(),
-		kappa: kappa.allow(null).optional(),
-		sigma: sigma.allow(null).optional(),
-		theta: theta.allow(null).optional(),
-		nbeta: nbeta.allow(null).optional(),
-		strategyId: strategyId.required(),
-		start_date: Joi.number().required(),
-		end_date: Joi.number().required()
+		proctype: PROC_TYPE.required(),
+		kappa: NUM.allow(null).optional(),
+		sigma: NUM.allow(null).optional(),
+		theta: NUM.allow(null).optional(),
+		nbeta: NUM.allow(null).optional(),
+		strategyId: ALPHA_NUM.required(),
+		start_date: NUM.required(),
+		end_date: NUM.required()
 	})
 }
 
 const getScenariosSchema = {
 	query: Joi.object().keys({
-		proctype: proctype.required(),
-		kappa: kappa.required(),
-		sigma: sigma.required(),
-		theta: theta.required(),
-		nbeta: nbeta.allow(null).optional(),
-		x_0: x_0.required(),
-		x_0_date: x_0_date.required(),
-		nsteps: nsteps.required(),
-		seed: seed.required()
+		proctype: PROC_TYPE.required(),
+		kappa: NUM.required(),
+		sigma: NUM.required(),
+		theta: NUM.required(),
+		nbeta: NUM.allow(null).optional(),
+		x_0: NUM.required(),
+		x_0_date: NUM_POS.required(),
+		nsteps: NUM_POS.required(),
+		seed: NUM_POS.required()
 	})
 }
 
 const getTimeseries = {
 	query: Joi.object().keys({
-		assetClass: assetClass.required(),
-		ticker: ticker.required(),
+		assetClass: ASSETCLASS.required(),
+		ticker: ALPHA_NUM.required(),
 	})
 }
 
@@ -119,7 +197,7 @@ const validateRequest = (requestSchema, req, res, next) => {
 			next();
 		})
 		.catch(validationError => {
-			const message = validationError.details.map(d => d.message);
+			const message = validationError.details.map(d => ({ msg: d.message, field: d.context.key }));
 			const error = new Error()
 			error.statusCode = 400;
 			error.message = message
@@ -135,5 +213,15 @@ module.exports = {
 	getTimeseries: (req, res, next) => validateRequest(getTimeseries, req, res, next),
 	upatePassword: (req, res, next) => validateRequest(upatePasswordSchema, req, res, next),
 	login: (req, res, next) => validateRequest(loginSchema, req, res, next),
-	register: (req, res, next) => validateRequest(registerSchema, req, res, next)
+	register: (req, res, next) => validateRequest(registerSchema, req, res, next),
+	searchUsers: (req, res, next) => validateRequest(searchUsersSchema, req, res, next),
+	userHistory: (req, res, next) => validateRequest(userHistorySchema, req, res, next),
+	userFind: (req, res, next) => validateRequest(userFindSchema, req, res, next),
+	setPassword: (req, res, next) => validateRequest(setPasswordSchema, req, res, next),
+	newUser: (req, res, next) => validateRequest(newUserSchema, req, res, next),
+	updateUser: (req, res, next) => validateRequest(updateUserSchema, req, res, next),
+	createTicker: (req, res, next) => validateRequest(createTickerSchema, req, res, next),
+	userRemove: (req, res, next) => validateRequest(userRemoveSchema, req, res, next),
+	tickerRemove: (req, res, next) => validateRequest(tickerRemoveSchema, req, res, next),
+	textTicker: (req, res, next) => validateRequest(textTickerSchema, req, res, next)
 }

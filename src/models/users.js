@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
-const Schema = mongoose.Schema;
+const mongoosePaginate = require('mongoose-paginate-v2');
 
 const UserSchema = new mongoose.Schema({
 	firstName: {
@@ -31,6 +31,15 @@ const UserSchema = new mongoose.Schema({
 	lastUpdate: {
 		type: Number,
 		default: Date.now
+	},
+	role: {
+		type: String,
+		default: "mrt",
+		enum: ["mrt", "admin"]
+	},
+	tokenRevoked: {
+		type: Boolean,
+		default: false
 	}
 });
 
@@ -45,6 +54,7 @@ UserSchema.virtual('url').get(function () {
 /**
  * Note: each model has an associated connection.
  */
+UserSchema.plugin(mongoosePaginate)
 const User = module.exports = mongoose.model('users', UserSchema);
 
 /**

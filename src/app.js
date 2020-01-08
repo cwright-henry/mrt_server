@@ -3,7 +3,6 @@ const express = require('express');
 const helmet = require('helmet')
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
-const cors = require('cors')
 const { LoggingMiddleware, Logger } = require('./utils/logging')
 const { errorHandler, genericHandler } = require('./errors')
 

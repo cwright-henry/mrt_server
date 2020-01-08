@@ -183,7 +183,6 @@ function saveStrategies(series, user, index) {
 		const p = [];
 		series.forEach(item => {
 			p.push(createStrategy(index ? (item.name + index) : item.name, item.data, user));
-			p.push(createUserHistory('ADD_LIBRARY', 'AUTO_POOPULATE', user));
 		});
 		Promise.all(p)
 			.then(() => resolve())

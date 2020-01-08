@@ -24,7 +24,8 @@ const DictionarySchema = new Schema({
 	source: {
 		required: true,
 		type: String,
-		trim: true
+		trim: true,
+		default: 'Investing.com'
 	}
 });
 

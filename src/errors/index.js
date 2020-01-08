@@ -1,13 +1,14 @@
-const {Logger} = require('../utils/logging')
+const { Logger } = require('../utils/logging')
 
 const errorHandler = (error, req, res, next) => {
+	console.log(error)
 	Logger.error(error)
 	if (error.name === 'MongoError') {
 		if (error.code === 11000) {
 			const err = new Error("DUPLICATE_NAME")
 			err.statusCode = 400;
 			next(err);
-		} 
+		}
 		else {
 			const err = new Error('DATABASE_ERROR')
 			err.statusCode = 500;
@@ -20,10 +21,10 @@ const errorHandler = (error, req, res, next) => {
 }
 
 const genericHandler = (error, req, res, next) => {
-  if (res.headersSent) {
-    return next(error)
-  }
-  res.status(error.statusCode || 500).send({code: error.message})
+	if (res.headersSent) {
+		return next(error)
+	}
+	res.status(error.statusCode || 500).send({ code: error.message })
 }
 
 

@@ -39,13 +39,6 @@ module.exports = {
 		const { user } = req;
 		const { name, data, source } = req.body;
 
-		const userHistory = new UserHistory({
-			action: 'ADD_LIBRARY',
-			meta: source,
-			user: user._id
-		});
-		await userHistory.save();
-
 		const strategy = new Strategy({
 			name,
 			source,
@@ -113,6 +106,9 @@ module.exports = {
 		res.send(await Strategy.paginate(query, options));
 	},
 
+	/**
+	 * Return a list of login activity
+	 */
 	async userHistory(req, res) {
 		const { user } = req;
 		const { page, pageSize } = req.query
@@ -129,7 +125,7 @@ module.exports = {
 			}
 		}
 
-		res.send(await UserHistory.page(query, options));
+		res.send(await UserHistory.paginate(query, options));
 	},
 
 	/**
@@ -149,15 +145,7 @@ module.exports = {
 			user: user._id
 		};
 
-		const strategy = await Strategy.findOneAndDelete(query).exec();
-		if (strategy) {
-			const userHistory = new UserHistory({
-				action: 'REMOVE_LIBRARY',
-				user
-			});
-			await userHistory.save();
-		}
-		res.send(strategy);
+		res.send(await Strategy.findOneAndDelete(query).exec());
 	},
 
 	async saveOUFit(req, res) {
@@ -284,5 +272,15 @@ module.exports = {
 		}
 
 		return res.status(404).send({ code: 'UNKNOWN_TICKER' })
+	},
+
+	/**
+	 * Retrieve all tickers from the Dictionary
+	 */
+	async getTickers(req, res, next) {
+		const tickers = await Dictionary.find({});
+		return res.status(200).json({
+			data: tickers
+		});
 	}
 }

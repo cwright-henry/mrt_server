@@ -20,10 +20,6 @@ const UserHistorySchema = new mongoose.Schema({
 	created: {
 		type: Number,
 		default: Date.now
-	},
-	lastUpdate: {
-		type: Number,
-		default: Date.now
 	}
 });
 
